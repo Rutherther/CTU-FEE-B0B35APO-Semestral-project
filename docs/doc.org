@@ -1,0 +1,35 @@
+** Průzkumník souborů
+** Prohlížeč obrázků
+*** Argumenty
+Program nelze bez argumentů spustit, je vždy potřeba spustit s cestou k souboru s obrázkem.
+
+Použití:
+#+begin_src
+./image-viewer [path-to-image]
+#+end_src
+
+*** Podporované formáty
+- jpg
+- png
+- ppm
+
+Formáty se rozlišují podle jejich hlaviček, koncovky se neberou vpotaz
+
+*** Funkce
+Program zobrazí na LCD displeji přeškálovaný obrázek, který se dá přibližovat pomocí rotačních enkoderů nebo standardního vstupu.
+
+*** Ovládání
+Program má kurzor, podle kterého se určuje, kam se přibližuje. Kurzor se zobrazí, když se s ním hýbe a chvilku potom. 
+
+**** Standardní vstup
+- h, j, k, l - ovládání kurzoru (doleva, dolů, nahoru, doprava)
+- z, x - přiblížení a oddálení obrázku (do místa, kde je kurzor)
+- r - vrácení do původního stavu (oddálí obrázek a nastaví kurzor doprostřed obrázku)
+- e - ukončení programu
+
+**** Rotační enkodery
+- První (červený) - posun kurzoru vertikálně
+- Druhý (zelený) - posun kurzoru horizontálně
+- Třetí (modrý) - přiblížení a oddálení
+- Tlačítko třetího enkoderu - vrácení do původního stavu
+- Tlačítko prvního enkoderu - ukončení programu
