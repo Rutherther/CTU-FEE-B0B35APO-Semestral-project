@@ -9,7 +9,7 @@ CXX = arm-linux-gnueabihf-g++
 CPPFLAGS = -I .
 CFLAGS =-g -std=gnu99 -O1 -Wall
 CXXFLAGS = -g -std=gnu++11 -O1 -Wall
-LDFLAGS = -lrt -lpthread -lmagic -ljpeg -lpng
+LDFLAGS = -lrt -lpthread -l :libmagic.so.1 -l :libjpeg.so.62 -l :libz.so -l :libpng16.so.16
 
 NAME=image-viewer
 BINARY=$(BIN_DIR)/$(NAME)
@@ -31,8 +31,9 @@ endif
 TARGET_DIR ?= /tmp/$(shell whoami)
 TARGET_USER ?= root
 # for use from Eduroam network use TARGET_IP=localhost and enable next line
-#SSH_OPTIONS=-o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o "Port=2222"
-#SSH_GDB_TUNNEL_REQUIRED=y
+SSH_OPTIONS=-o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o "Port=2222"
+SSH_GDB_TUNNEL_REQUIRED=y
+SSH_OPTIONS+=-i ~/.ssh/mzapo-root-key
 #SSH_OPTIONS=-i /opt/zynq/ssh-connect/mzapo-root-key
 #SSH_OPTIONS=-o 'ProxyJump=ctu_login@postel.felk.cvut.cz'
 
@@ -63,13 +64,13 @@ ifneq ($(filter %.cpp,$(SRC)),)
 	  >> depend
 endif
 
-copy-executable: $(TARGET_EXE)
+copy-executable: $(BINARY)
 	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) killall gdbserver 1>/dev/null 2>/dev/null || true
 	ssh $(SSH_OPTIONS) $(TARGET_USER)@$(TARGET_IP) mkdir -p $(TARGET_DIR)
 	scp $(SSH_OPTIONS) $(BINARY) $(TARGET_USER)@$(TARGET_IP):$(TARGET_DIR)/$(NAME)
 
-run: copy-executable $(TARGET_EXE)
-	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/$(TARGET_EXE)
+run: copy-executable $(BINARY)
+	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/$(NAME)
 
 ifneq ($(filter -o ProxyJump=,$(SSH_OPTIONS))$(SSH_GDB_TUNNEL_REQUIRED),)
 SSH_GDB_PORT_FORWARD=-L 12345:127.0.0.1:12345
@@ -78,13 +79,13 @@ else
 TARGET_GDB_PORT=$(TARGET_IP):12345
 endif
 
-debug: copy-executable $(TARGET_EXE)
-	xterm -e ssh $(SSH_OPTIONS) $(SSH_GDB_PORT_FORWARD) -t $(TARGET_USER)@$(TARGET_IP) gdbserver :12345 $(TARGET_DIR)/$(TARGET_EXE) &
+debug: copy-executable $(BINARY)
+	xterm -e ssh $(SSH_OPTIONS) $(SSH_GDB_PORT_FORWARD) -t $(TARGET_USER)@$(TARGET_IP) gdbserver :12345 $(TARGET_DIR)/$(NAME) &
 	sleep 2
 	echo >connect.gdb "target extended-remote $(TARGET_GDB_PORT)"
 	echo >>connect.gdb "b main"
 	echo >>connect.gdb "c"
-	ddd --debugger gdb-multiarch -x connect.gdb $(TARGET_EXE)
+	ddd --debugger gdb-multiarch -x connect.gdb $(BINARY)
 
 clean:
 	$(RM) -rv $(BIN_DIR) $(OBJ_DIR)
