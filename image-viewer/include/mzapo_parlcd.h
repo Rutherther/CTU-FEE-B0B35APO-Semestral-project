@@ -17,6 +17,8 @@
 
 #include <stdint.h>
 
+#define PARLCD_CMD_FRAMEBUFFER 0x2C
+
 #ifdef __cplusplus
 extern "C" {
 #endif
