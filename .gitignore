@@ -1,4 +1,4 @@
-compile-commands.json
+compile_commands.json
 .cache
 ignore
 bin/
