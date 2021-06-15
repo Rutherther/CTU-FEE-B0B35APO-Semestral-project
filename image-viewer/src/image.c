@@ -144,6 +144,15 @@ static void image_write_upscale(image_t *image, display_t *display,
     }
   }
 }
+
+static void image_write_direct(image_t *image, display_t *display,
+                               image_region_t region) {
+  for (int y = 0; y < region.height; y++) {
+    for (int x = 0; x < region.width; x++) {
+      display_set_pixel(display, x, y, image_get_pixel(image, x + region.x, y + region.y));
+    }
+  }
+}
                             image_region_t region) {
   uint16_t w = region.width, h = region.height;
   uint16_t x = region.x, y = region.y;
