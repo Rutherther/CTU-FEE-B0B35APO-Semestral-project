@@ -156,6 +156,6 @@ void image_viewer_start_loop(image_viewer_t *viewer, void *reg_knobs_base) {
 
 void image_viewer_display_image(image_viewer_t *viewer) {
   cursor_hide(&viewer->cursor, viewer->display);
-  viewer->scale_factor = image_write_to_display(&viewer->image, viewer->display, viewer->region);
+  viewer->scale_factor = image_write_to_display(&viewer->image, viewer->display, viewer->region, viewer->display_region);
   display_render(viewer->display);
 }

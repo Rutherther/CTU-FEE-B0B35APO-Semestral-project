@@ -59,6 +59,8 @@ image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width, uint1
 bool image_region_move_within(image_region_t *to_move, direction_t direction,
                               int amount, image_region_t *border);
 
-double image_write_to_display(image_t *image, display_t *display, image_region_t region);
+double image_write_to_display(image_t *image, display_t *display,
+                              image_region_t region,
+                              image_region_t display_region);
 
 #endif // __IMAGE_H__

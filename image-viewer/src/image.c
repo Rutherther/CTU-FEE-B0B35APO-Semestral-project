@@ -66,6 +66,7 @@ void image_set_pixel(image_t *image, uint16_t x, uint16_t y,
                        display_pixel_t pixel) {
   image->pixels[y * image->width + x] = pixel;
 }
+
 double get_scale_factor(uint16_t w, uint16_t h, image_region_t display_region) {
   double scale_x = (double)display_region.width / (double)w;
   double scale_y = (double)display_region.height / (double)h;
@@ -82,7 +83,7 @@ double get_scale_factor(uint16_t w, uint16_t h, image_region_t display_region) {
 }
 
 static void image_write_downscale(image_t *image, display_t *display,
-                                  image_region_t region, double scale_factor) {
+                                  image_region_t region, image_region_t display_region, double scale_factor) {
   float downscale_factor = 1 / scale_factor;
   uint16_t avg_pixels = downscale_factor;
   uint16_t w = region.width, h = region.height;
@@ -96,8 +97,8 @@ static void image_write_downscale(image_t *image, display_t *display,
   uint32_t avg_count = avg_pixels * avg_pixels;
   uint32_t downhalf = downscale_factor / 2;
 
-  uint16_t beg_x = (DISPLAY_WIDTH - sw) / 2;
-  uint16_t beg_y = (DISPLAY_HEIGHT - sh) / 2;
+  uint16_t beg_x = (display_region.width - sw) / 2 + display_region.x;
+  uint16_t beg_y = (display_region.height - sh) / 2 + display_region.y;
 
   for (int y = 0; y < sh; y++) {
     for (int x = 0; x < sw; x++) {
@@ -126,13 +127,13 @@ static void image_write_downscale(image_t *image, display_t *display,
 }
 
 static void image_write_upscale(image_t *image, display_t *display,
-                                image_region_t region, double scale_factor) {
+                                image_region_t region, image_region_t display_region, double scale_factor) {
   float downscale_factor = 1 / scale_factor;
   uint16_t w = region.width, h = region.height;
   uint16_t sw = (uint16_t)(scale_factor * w), sh = (uint16_t)(scale_factor * h);
 
-  uint16_t beg_x = (DISPLAY_WIDTH - sw) / 2;
-  uint16_t beg_y = (DISPLAY_HEIGHT - sh) / 2;
+  uint16_t beg_x = (display_region.width - sw) / 2 + display_region.x;
+  uint16_t beg_y = (display_region.height - sh) / 2 + display_region.y;
 
   for (int y = 0; y < sh; y++) {
     for (int x = 0; x < sw; x++) {
@@ -146,31 +147,30 @@ static void image_write_upscale(image_t *image, display_t *display,
 }
 
 static void image_write_direct(image_t *image, display_t *display,
-                               image_region_t region) {
+                               image_region_t region, image_region_t display_region) {
   for (int y = 0; y < region.height; y++) {
     for (int x = 0; x < region.width; x++) {
-      display_set_pixel(display, x, y, image_get_pixel(image, x + region.x, y + region.y));
+      display_set_pixel(display, x + display_region.x, y + display_region.y, image_get_pixel(image, x + region.x, y + region.y));
     }
   }
 }
 
 double image_write_to_display(image_t *image, display_t *display,
-                            image_region_t region) {
+                              image_region_t region, image_region_t display_region) {
   uint16_t w = region.width, h = region.height;
-  if (w == DISPLAY_WIDTH && h == DISPLAY_HEIGHT) {
+  if (w == display_region.width && h == display_region.height) {
     // write directly to image
-    image_write_direct(image, display, region);
+    image_write_direct(image, display, region, display_region);
     return 1;
   }
 
-  image_region_t display_region = image_region_create(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
   double scale = get_scale_factor(w, h, display_region);
 
   // scaling
   if (scale < 1) {
-    image_write_downscale(image, display, region, scale);
+    image_write_downscale(image, display, region, display_region, scale);
   } else {
-    image_write_upscale(image, display, region, scale);
+    image_write_upscale(image, display, region, display_region, scale);
   }
 
   return scale;
