@@ -17,9 +17,13 @@ image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t 
     .cursor = cursor_create(),
     .region = image_region_create(0, 0, 0, 0),
     .logger = logger,
+    .display_region = image_region_create(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT),
+    .scale_factor = 0
   };
 
-  if (image_load(&viewer.image)) {
+  viewer.error = image_loader_load(&viewer.image);
+
+  if (viewer.error == IMERR_SUCCESS) {
     viewer.region = image_region_create(0, 0, viewer.image.width, viewer.image.height);
   }
 
