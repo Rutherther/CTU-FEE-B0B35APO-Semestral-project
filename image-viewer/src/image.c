@@ -1,5 +1,8 @@
 #include "image.h"
+#include "display_utils.h"
 #include <stdlib.h>
+
+
 
 image_t image_create(char *path) {
   image_t image = {
@@ -31,6 +34,29 @@ image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width,
   return region;
 }
 
+bool image_region_move_within(image_region_t *to_move, direction_t direction,
+                              int amount, image_region_t *border) {
+  uint16_t x = to_move->x;
+  uint16_t y = to_move->y;
+
+  if (x < border->x) {
+    x = border->x;
+  } else if (x + to_move->width >= border->width + border->x) {
+    x = border->x + border->width - 1;
+  }
+
+  if (y < border->y) {
+    y = border->y;
+  } else if (y + to_move->height >= border->height + border->y) {
+    y = border->x + border->height - 1;
+  }
+
+  bool changed = to_move->x != x || to_move->y != y;
+  to_move->x = x;
+  to_move->y = y;
+
+  return changed;
+}
 
 display_pixel_t image_get_pixel(image_t *image, uint16_t x, uint16_t y) {
   return image->pixels[y * image->width + x];

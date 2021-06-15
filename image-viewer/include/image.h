@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "display_utils.h"
+#include "direction.h"
 
 typedef enum {
   IMG_UNKNOWN,
@@ -53,8 +54,11 @@ display_pixel_t image_get_pixel(image_t *image, uint16_t x, uint16_t y);
 
 void image_set_pixel(image_t *image, uint16_t x, uint16_t y,
                      display_pixel_t pixel);
-image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 
-bool image_write_to_display(image_t *image, display_t *display, image_region_t region);
+image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+bool image_region_move_within(image_region_t *to_move, direction_t direction,
+                              int amount, image_region_t *border);
+
+double image_write_to_display(image_t *image, display_t *display, image_region_t region);
 
 #endif // __IMAGE_H__
