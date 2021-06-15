@@ -17,7 +17,7 @@ BINARY=$(BIN_DIR)/$(NAME)
 SRC=$(wildcard $(SRC_DIR)/*.c)
 OBJ=$(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
 
-CFLAGS=-I$(INC_DIR) -Wall -Werror -g -O0
+CFLAGS+=-I$(INC_DIR) -Wall -Werror
 CFLAGS+=$(shell sdl2-config --cflags)
 
 #TARGET_IP ?= 192.168.202.127
