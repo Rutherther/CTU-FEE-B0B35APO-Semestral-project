@@ -1,5 +1,4 @@
 #include "nonblocking_io.h"
-#include "time_measure.h"
 #include <stdint.h>
 #include <asm-generic/errno-base.h>
 #include <asm-generic/errno.h>
@@ -56,7 +55,7 @@ int file_read_nonblocking(int file, size_t max_size, uint8_t *data)
   return read_bytes;
 }
 
-bool file_write_nonblocking(int file, size_t size, uint8_t *data, int max_delay) {
+/*bool file_write_nonblocking(int file, size_t size, uint8_t *data, int max_delay) {
   int written = 0;
   bool correct = true;
 
@@ -83,4 +82,4 @@ bool file_write_nonblocking(int file, size_t size, uint8_t *data, int max_delay)
   }
 
   return correct;
-}
+  }*/
