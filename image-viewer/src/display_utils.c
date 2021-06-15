@@ -12,9 +12,9 @@ display_pixel_t raw_pixel_onebit_convert_to_display(raw_pixel_onebit_t pixel,
                                                     raw_pixel_onebit_t max) {
   display_pixel_t new = {
       .fields = {
-          .r = ((double)pixel.red / (double)max.red) * DISPLAY_MAX_RED,
-          .g = ((double)pixel.green / (double)max.green) * DISPLAY_MAX_GREEN,
-          .b = ((double)pixel.blue / (double)max.blue) * DISPLAY_MAX_BLUE,
+          .r = ((float)pixel.red / (float)max.red) * DISPLAY_MAX_RED,
+          .g = ((float)pixel.green / (float)max.green) * DISPLAY_MAX_GREEN,
+          .b = ((float)pixel.blue / (float)max.blue) * DISPLAY_MAX_BLUE,
       }};
 
   return new;
@@ -24,9 +24,9 @@ display_pixel_t raw_pixel_convert_to_display(raw_pixel_t pixel,
                                              raw_pixel_t max) {
   display_pixel_t new = {
       .fields = {
-          .r = ((double)pixel.red / (double)max.red) * DISPLAY_MAX_RED,
-          .g = ((double)pixel.green / (double)max.green) * DISPLAY_MAX_GREEN,
-          .b = ((double)pixel.blue / (double)max.blue) * DISPLAY_MAX_BLUE,
+          .r = ((float)pixel.red / (float)max.red) * DISPLAY_MAX_RED,
+          .g = ((float)pixel.green / (float)max.green) * DISPLAY_MAX_GREEN,
+          .b = ((float)pixel.blue / (float)max.blue) * DISPLAY_MAX_BLUE,
       }
   };
 
