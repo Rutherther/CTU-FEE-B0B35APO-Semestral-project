@@ -53,6 +53,10 @@ void logger_log_vaargs(logger_t *logger, LogLevel level, const char *file_name,
     file = logger->errorFile;
     prefix = ERROR_PREFIX;
     break;
+  default:
+    prefix = "UNKN";
+    file = logger->errorFile;
+    break;
   }
 
   assert(file != NULL);
@@ -60,7 +64,7 @@ void logger_log_vaargs(logger_t *logger, LogLevel level, const char *file_name,
   print_time(file);
   fprintf(file, "] %s: ", prefix);
   vfprintf(file, message, args);
-  fprintf(file, "(%s/%s:%s)", file_name, function, line);
+  fprintf(file, " (%s/%s:%d)", file_name, function, line);
   fprintf(file, "\r\n");
 }
 
