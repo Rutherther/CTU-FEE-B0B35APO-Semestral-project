@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-#define DISPLAY_MAX_RED 0x11111
-#define DISPLAY_MAX_GREEN 0x111111
-#define DISPLAY_MAX_BLUE 0x11111
+#define DISPLAY_MAX_RED 31u
+#define DISPLAY_MAX_GREEN 63u
+#define DISPLAY_MAX_BLUE 31u
 
 #define DISPLAY_WIDTH 480
 #define DISPLAY_HEIGHT 320
