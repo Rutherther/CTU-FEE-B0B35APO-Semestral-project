@@ -82,6 +82,49 @@ double get_scale_factor(uint16_t w, uint16_t h, image_region_t display_region) {
 }
 
 bool image_write_to_display(image_t *image, display_t *display,
+static void image_write_downscale(image_t *image, display_t *display,
+                                  image_region_t region, double scale_factor) {
+  float downscale_factor = 1 / scale_factor;
+  uint16_t avg_pixels = downscale_factor;
+  uint16_t w = region.width, h = region.height;
+  uint16_t sw = (uint16_t)(scale_factor * w), sh = (uint16_t)(scale_factor * h);
+
+  unsigned long avg_range = ((unsigned long)downscale_factor);
+  if (scale_factor - avg_range >= 0.5) {
+    avg_range++;
+  }
+
+  uint32_t avg_count = avg_pixels * avg_pixels;
+  uint32_t downhalf = downscale_factor / 2;
+
+  uint16_t beg_x = (DISPLAY_WIDTH - sw) / 2;
+  uint16_t beg_y = (DISPLAY_HEIGHT - sh) / 2;
+
+  for (int y = 0; y < sh; y++) {
+    for (int x = 0; x < sw; x++) {
+      uint16_t px = (uint16_t)(downscale_factor * (x + 0.5f)) + region.x;
+      uint16_t py = (uint16_t)(downscale_factor * (y + 0.5f)) + region.y;
+      raw_pixel_t result = {.red = 0, .green = 0, .blue = 0};
+
+      for (int avg_x = 0; avg_x < avg_pixels; avg_x++) {
+        for (int avg_y = 0; avg_y < avg_pixels; avg_y++) {
+          display_pixel_t pixel = image_get_pixel(image, px + avg_x - downhalf, py + avg_y - downhalf);
+
+          result.red += pixel.fields.r;
+          result.green += pixel.fields.g;
+          result.blue += pixel.fields.b;
+        }
+      }
+
+      result.red /= avg_count;
+      result.green /= avg_count;
+      result.blue /= avg_count;
+
+      display_pixel_t result_display = {.fields = {.r = result.red, .g = result.green, .b = result.blue}};
+      display_set_pixel(display, x + beg_x, y + beg_y, result_display);
+    }
+  }
+}
                             image_region_t region) {
   uint16_t w = region.width, h = region.height;
   uint16_t x = region.x, y = region.y;
