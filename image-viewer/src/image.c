@@ -81,7 +81,6 @@ double get_scale_factor(uint16_t w, uint16_t h, image_region_t display_region) {
   return scale;
 }
 
-bool image_write_to_display(image_t *image, display_t *display,
 static void image_write_downscale(image_t *image, display_t *display,
                                   image_region_t region, double scale_factor) {
   float downscale_factor = 1 / scale_factor;
@@ -125,6 +124,7 @@ static void image_write_downscale(image_t *image, display_t *display,
     }
   }
 }
+
 static void image_write_upscale(image_t *image, display_t *display,
                                 image_region_t region, double scale_factor) {
   float downscale_factor = 1 / scale_factor;
@@ -153,15 +153,25 @@ static void image_write_direct(image_t *image, display_t *display,
     }
   }
 }
+
+double image_write_to_display(image_t *image, display_t *display,
                             image_region_t region) {
   uint16_t w = region.width, h = region.height;
-  uint16_t x = region.x, y = region.y;
+  if (w == DISPLAY_WIDTH && h == DISPLAY_HEIGHT) {
+    // write directly to image
+    image_write_direct(image, display, region);
+    return 1;
+  }
 
   image_region_t display_region = image_region_create(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
   double scale = get_scale_factor(w, h, display_region);
 
-  uint16_t sw = (uint16_t)(scale * w), sh = (uint16_t)(scale * h);
-
   // scaling
-  return true;
+  if (scale < 1) {
+    image_write_downscale(image, display, region, scale);
+  } else {
+    image_write_upscale(image, display, region, scale);
+  }
+
+  return scale;
 }
