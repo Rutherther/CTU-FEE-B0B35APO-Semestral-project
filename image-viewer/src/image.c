@@ -31,6 +31,15 @@ image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width,
   return region;
 }
 
+
+display_pixel_t image_get_pixel(image_t *image, uint16_t x, uint16_t y) {
+  return image->pixels[y * image->width + x];
+}
+
+void image_set_pixel(image_t *image, uint16_t x, uint16_t y,
+                       display_pixel_t pixel) {
+  image->pixels[y * image->width + x] = pixel;
+}
 double get_scale_factor(uint16_t w, uint16_t h, image_region_t display_region) {
   double scale_x = (double)display_region.width / (double)w;
   double scale_y = (double)display_region.height / (double)h;

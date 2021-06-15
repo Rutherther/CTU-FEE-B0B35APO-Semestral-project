@@ -49,6 +49,10 @@ typedef struct {
 image_t image_create(char *path);
 void image_destroy(image_t *image);
 
+display_pixel_t image_get_pixel(image_t *image, uint16_t x, uint16_t y);
+
+void image_set_pixel(image_t *image, uint16_t x, uint16_t y,
+                     display_pixel_t pixel);
 image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 
 bool image_write_to_display(image_t *image, display_t *display, image_region_t region);
