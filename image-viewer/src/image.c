@@ -125,6 +125,25 @@ static void image_write_downscale(image_t *image, display_t *display,
     }
   }
 }
+static void image_write_upscale(image_t *image, display_t *display,
+                                image_region_t region, double scale_factor) {
+  float downscale_factor = 1 / scale_factor;
+  uint16_t w = region.width, h = region.height;
+  uint16_t sw = (uint16_t)(scale_factor * w), sh = (uint16_t)(scale_factor * h);
+
+  uint16_t beg_x = (DISPLAY_WIDTH - sw) / 2;
+  uint16_t beg_y = (DISPLAY_HEIGHT - sh) / 2;
+
+  for (int y = 0; y < sh; y++) {
+    for (int x = 0; x < sw; x++) {
+      float px = (downscale_factor * (x + 0.5f)) + region.x;
+      float py = (downscale_factor * (y + 0.5f)) + region.y;
+
+      display_pixel_t result_display = image_get_pixel(image, px, py);
+      display_set_pixel(display, x + beg_x, y + beg_y, result_display);
+    }
+  }
+}
                             image_region_t region) {
   uint16_t w = region.width, h = region.height;
   uint16_t x = region.x, y = region.y;
