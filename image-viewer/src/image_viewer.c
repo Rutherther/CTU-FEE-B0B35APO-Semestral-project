@@ -30,40 +30,44 @@ void image_viewer_destroy(image_viewer_t *viewer) {
   image_destroy(&viewer->image);
 }
 
+void command_handler_move_cursor(void *data, direction_t direction, int amount) {
+  image_viewer_t *viewer = (image_viewer_t *)data;
+
+  if (!cursor_move(&viewer->cursor, &viewer->display_region, direction, amount)) {
+    image_region_move_within(&viewer->region, direction, (int)(amount * viewer->scale_factor), &viewer->display_region);
+    image_viewer_display_image(viewer);
+  }
+
+  cursor_show(&viewer->cursor, viewer->display);
+  display_render(viewer->display);
+}
+
 void command_handler_move_left(void *data, int amount) {
   image_viewer_t *viewer = (image_viewer_t*)data;
   logger_debug(viewer->logger, __FILE__, __FUNCTION__, __LINE__,
                "Moving cursor to left by %d", amount);
-  cursor_move(&viewer->cursor, &viewer->region, LEFT, amount);
-  cursor_show(&viewer->cursor, viewer->display);
-  display_render(viewer->display);
+  command_handler_move_cursor(data, LEFT, amount);
 }
 
 void command_handler_move_right(void *data, int amount) {
   image_viewer_t *viewer = (image_viewer_t *)data;
   logger_debug(viewer->logger, __FILE__, __FUNCTION__, __LINE__,
                "Moving cursor to right by %d", amount);
-  cursor_move(&viewer->cursor, &viewer->region, RIGHT, amount);
-  cursor_show(&viewer->cursor, viewer->display);
-  display_render(viewer->display);
+  command_handler_move_cursor(data, RIGHT, amount);
 }
 
 void command_handler_move_up(void *data, int amount) {
   image_viewer_t *viewer = (image_viewer_t *)data;
   logger_debug(viewer->logger, __FILE__, __FUNCTION__, __LINE__,
                "Moving cursor up by %d", amount);
-  cursor_move(&viewer->cursor, &viewer->region, UP, amount);
-  cursor_show(&viewer->cursor, viewer->display);
-  display_render(viewer->display);
+  command_handler_move_cursor(data, UP, amount);
 }
 
 void command_handler_move_down(void *data, int amount) {
   image_viewer_t *viewer = (image_viewer_t *)data;
   logger_debug(viewer->logger, __FILE__, __FUNCTION__, __LINE__,
                "Moving cursor down by %d", amount);
-  cursor_move(&viewer->cursor, &viewer->region, DOWN, amount);
-  cursor_show(&viewer->cursor, viewer->display);
-  display_render(viewer->display);
+  command_handler_move_cursor(data, DOWN, amount);
 }
 
 void command_handler_exit(void *data, int amount) {
