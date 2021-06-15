@@ -40,8 +40,10 @@ typedef struct {
   display_data_t data;
 } display_t;
 
-const display_pixel_t BLACK_PIXEL = { .bits = 0 };
-const display_pixel_t WHITE_PIXEL = { .bits = 0xFFFF };
+extern const display_pixel_t BLACK_PIXEL;
+extern const display_pixel_t WHITE_PIXEL;
+
+extern const raw_pixel_t DISPLAY_PIXEL_MAX;
 
 display_pixel_t raw_pixel_onebit_convert_to_display(raw_pixel_onebit_t pixel,
                                              raw_pixel_onebit_t max);

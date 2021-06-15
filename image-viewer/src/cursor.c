@@ -2,6 +2,8 @@
 #include "display_utils.h"
 #include "image.h"
 
+const display_pixel_t CURSOR_COLOR = {.fields = {.r = (uint8_t)DISPLAY_MAX_RED, .g = 0, .b = 0}};
+
 cursor_t cursor_create() {
   cursor_t cursor = {
     .x = 0,

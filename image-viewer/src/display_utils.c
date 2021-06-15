@@ -1,6 +1,13 @@
 #include "display_utils.h"
 #include "mzapo_parlcd.h"
 
+const display_pixel_t BLACK_PIXEL = {.bits = 0};
+const display_pixel_t WHITE_PIXEL = {.bits = 0xFFFF};
+
+const raw_pixel_t DISPLAY_PIXEL_MAX = {.red = (uint16_t)DISPLAY_MAX_RED,
+                                       .green = (uint16_t)DISPLAY_MAX_GREEN,
+                                       .blue = (uint16_t)DISPLAY_MAX_BLUE};
+
 display_pixel_t raw_pixel_onebit_convert_to_display(raw_pixel_onebit_t pixel,
                                                     raw_pixel_onebit_t max) {
   display_pixel_t new = {
