@@ -4,6 +4,7 @@
  *******************************************************************/
 
 #include "display_utils.h"
+#include "image.h"
 #include "image_viewer.h"
 
 #include <png.h>
@@ -40,6 +41,7 @@ int main(int argc, char *argv[])
 
   if (argc < 2) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Not enough arguments.");
+    return 1;
   }
 
   logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
@@ -63,6 +65,9 @@ int main(int argc, char *argv[])
               "Starting image viewer...", argv[1]);
 
   image_viewer_t viewer = image_viewer_create(argv[1], &display, &logger);
+  if (viewer.error != IMERR_SUCCESS) {
+    logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not load image %d", viewer.error);
+  }
 
   image_viewer_display_image(&viewer);
 
