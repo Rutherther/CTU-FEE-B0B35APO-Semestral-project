@@ -1,3 +1,6 @@
+#ifndef __INPUT_H__
+#define __INPUT_H__
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <time.h>
@@ -55,3 +58,5 @@ bool commands_register(commands_t *commands, input_type_t type,
 bool commands_unregister(commands_t *commands, command_t *command);
 
 short commands_check_input(commands_t *commands);
+
+#endif // __INPUT_H__

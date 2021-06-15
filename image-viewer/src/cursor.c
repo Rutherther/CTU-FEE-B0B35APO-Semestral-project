@@ -1,4 +1,5 @@
 #include "cursor.h"
+#include "direction.h"
 #include "display_utils.h"
 #include "image.h"
 
@@ -20,23 +21,9 @@ void cursor_center(cursor_t *cursor, image_region_t *region) {
   cursor->y = region->y + region->height / 2;
 }
 
-void cursor_move(cursor_t *cursor, image_region_t *region, direction_t direction, uint8_t amount) {
+bool cursor_move(cursor_t *cursor, image_region_t *region, direction_t direction, int16_t amount) {
   uint16_t x = cursor->x, y = cursor->y;
-
-  switch (direction) {
-  case LEFT:
-    x -= amount;
-    break;
-  case RIGHT:
-    x += amount;
-    break;
-  case UP:
-    y -= amount;
-    break;
-  case DOWN:
-    y += amount;
-    break;
-  }
+  direction_move_xy(direction, &x, &y, amount);
 
   if (x < region->x) {
     x = region->x;
@@ -50,8 +37,10 @@ void cursor_move(cursor_t *cursor, image_region_t *region, direction_t direction
     y = region->y + region->height - 1;
   }
 
+  bool moved = cursor->x != x || cursor->y != y;
   cursor->x = x;
   cursor->y = y;
+  return moved;
 }
 
 void cursor_show(cursor_t *cursor, display_t *display) {

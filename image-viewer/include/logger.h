@@ -1,5 +1,5 @@
-#ifndef _LOGGER_H
-#define _LOGGER_H
+#ifndef __LOGGER_H__
+#define __LOGGER_H__
 
 #include <stdio.h>
 
@@ -41,4 +41,4 @@ void logger_warn(logger_t *logger, const char *file, const char *function,
 void logger_error(logger_t *logger, const char *file, const char *function,
                   int line, const char *const message, ...);
 
-#endif //_LOGGER_H
+#endif //__LOGGER_H__
