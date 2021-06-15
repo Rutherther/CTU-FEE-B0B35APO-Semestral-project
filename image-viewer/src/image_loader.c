@@ -47,9 +47,9 @@ image_error_t image_loader_load_ppm(image_t *image) {
   }
 
   char null[10];
-  short height, width, maxBrightness;
+  short maxBrightness;
 
-  if (fscanf(file, "%2s %hd %hd %hd", null, &width, &height, &maxBrightness) != 4) {
+  if (fscanf(file, "%2s %hd %hd %hd", null, &image->width, &image->height, &maxBrightness) != 4) {
     return IMERR_WRONG_FORMAT;
   }
 
