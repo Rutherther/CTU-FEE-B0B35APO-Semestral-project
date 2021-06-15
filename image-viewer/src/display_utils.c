@@ -1,5 +1,6 @@
 #include "display_utils.h"
 #include "mzapo_parlcd.h"
+#include <stdlib.h>
 
 const display_pixel_t BLACK_PIXEL = {.bits = 0};
 const display_pixel_t WHITE_PIXEL = {.bits = 0xFFFF};
@@ -37,8 +38,11 @@ display_t display_init(display_data_t data) {
   display_t display = {
     .data = data
   };
-  parlcd_hx8357_init(data.base_address);
-  display_clear(&display);
+
+  if (data.base_address != NULL) {
+    parlcd_hx8357_init(data.base_address);
+    display_clear(&display);
+  }
 
   return display;
 }
@@ -47,6 +51,10 @@ void display_deinit(display_t *display) {
 }
 
 void display_render(display_t *display) {
+  if (display->data.base_address == NULL) {
+    return;
+  }
+
   parlcd_write_cmd(display->data.base_address, PARLCD_CMD_FRAMEBUFFER);
   int count = DISPLAY_HEIGHT * DISPLAY_WIDTH;
   for (int i = 0; i < count; i++) {
@@ -55,6 +63,10 @@ void display_render(display_t *display) {
 }
 
 void display_clear(display_t *display) {
+  if (display->data.base_address == NULL) {
+    return;
+  }
+
   int count = DISPLAY_HEIGHT * DISPLAY_WIDTH;
   for (int i = 0; i < count; i++) {
     display->pixels[i] = BLACK_PIXEL;
