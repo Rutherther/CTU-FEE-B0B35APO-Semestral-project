@@ -89,6 +89,15 @@ int16_t commands_execute(commands_t * commands, input_type_t type, char filter,
 }
 
 void commands_update_rotation_encoders(rotation_encoders_t *encoders) {
+  if (encoders->base_address == NULL) {
+    for (int i = 0; i < ROTATION_ENCODERS_COUNT; i++) {
+      encoders->encoders_state[i].absolute = 0;
+      encoders->encoders_state[i].delta = 0;
+      encoders->encoders_state[i].button = false;
+      encoders->encoders_state[i].button_prev = false;
+    }
+    return;
+  }
   uint8_t btns = *(volatile uint8_t*)(encoders->base_address + ROTATION_ENCODERS_COUNT);
 
   for (int i = 0; i < ROTATION_ENCODERS_COUNT; i++) {

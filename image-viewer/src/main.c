@@ -52,8 +52,10 @@ int main(int argc, char *argv[])
   };
 
   void *reg_knobs_base =
-      map_phys_address(SPILED_REG_BASE_PHYS, SPILED_REG_SIZE, 0) +
-      SPILED_REG_KNOBS_8BIT_o;
+    map_phys_address(SPILED_REG_BASE_PHYS, SPILED_REG_SIZE, 0);
+  if (reg_knobs_base != NULL) {
+    reg_knobs_base += SPILED_REG_KNOBS_8BIT_o;
+  }
 
   logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
               "Initializing display...", argv[1]);
