@@ -49,7 +49,7 @@ bool commands_register(commands_t * commands, input_type_t type, char filter,
       .input = {.filter = filter, .type = type},
   };
 
-  commands->commands[commands->size++] = command;
+  commands->commands[commands->count++] = command;
   return true;
 }
 
@@ -76,7 +76,7 @@ bool commands_unregister(commands_t * commands, command_t * command) {
 int16_t commands_execute(commands_t * commands, input_type_t type, char filter,
                         int amount) {
   int16_t commands_executed = 0;
-  for (int i = 0; i < commands->size; i++) {
+  for (int i = 0; i < commands->count; i++) {
     command_t command = commands->commands[i];
 
     if (command.input.filter == filter && command.input.type == type) {
@@ -98,6 +98,7 @@ void commands_update_rotation_encoders(rotation_encoders_t *encoders) {
     }
     return;
   }
+
   uint8_t btns = *(volatile uint8_t*)(encoders->base_address + ROTATION_ENCODERS_COUNT);
 
   for (int i = 0; i < ROTATION_ENCODERS_COUNT; i++) {

@@ -72,7 +72,6 @@ int main(int argc, char *argv[])
   }
 
   image_viewer_display_image(&viewer);
-
   image_viewer_start_loop(&viewer, reg_knobs_base);
 
   logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
