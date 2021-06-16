@@ -102,10 +102,18 @@ void display_clear(display_t *display, bool render) {
 }
 
 display_pixel_t display_get_pixel(display_t *display, uint16_t x, uint16_t y) {
+  if (y >= DISPLAY_HEIGHT || x >= DISPLAY_WIDTH) {
+    return BLACK_PIXEL;
+  }
+
   return display->pixels[y * DISPLAY_WIDTH + x];
 }
 
 void display_set_pixel(display_t *display, uint16_t x, uint16_t y,
                        display_pixel_t pixel) {
+  if (y >= DISPLAY_HEIGHT || x >= DISPLAY_WIDTH) {
+    return;
+  }
+
   display->pixels[y * DISPLAY_WIDTH + x] = pixel;
 }

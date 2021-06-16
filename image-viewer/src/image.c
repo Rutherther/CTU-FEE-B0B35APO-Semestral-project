@@ -59,11 +59,18 @@ bool image_region_move_within(image_region_t *to_move, direction_t direction,
 }
 
 display_pixel_t image_get_pixel(image_t *image, uint16_t x, uint16_t y) {
+  if (y >= image->height || x >= image->width) {
+    return BLACK_PIXEL;
+  }
   return image->pixels[y * image->width + x];
 }
 
 void image_set_pixel(image_t *image, uint16_t x, uint16_t y,
                        display_pixel_t pixel) {
+  if (y >= image->height || x >= image->width) {
+    return;
+  }
+
   image->pixels[y * image->width + x] = pixel;
 }
 
