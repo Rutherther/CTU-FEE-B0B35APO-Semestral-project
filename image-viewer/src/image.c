@@ -94,7 +94,7 @@ double get_scale_factor(uint16_t w, uint16_t h, image_region_t display_region) {
 static void image_write_downscale(image_t *image, display_t *display,
                                   image_region_t region, image_region_t display_region, double scale_factor) {
   float downscale_factor = 1 / scale_factor;
-  const downscale_precision = 10000;
+  const uint16_t downscale_precision = 10000;
   uint32_t downscale_factor_i = downscale_factor * downscale_precision;
   uint16_t w = region.width, h = region.height;
   uint16_t sw = (uint16_t)(scale_factor * w), sh = (uint16_t)(scale_factor * h);
@@ -120,6 +120,8 @@ static void image_write_downscale(image_t *image, display_t *display,
 static void image_write_upscale(image_t *image, display_t *display,
                                 image_region_t region, image_region_t display_region, double scale_factor) {
   float downscale_factor = 1 / scale_factor;
+  const uint16_t downscale_precision = 10000;
+  uint32_t downscale_factor_i = downscale_factor * downscale_precision;
   uint16_t w = region.width, h = region.height;
   uint16_t sw = (uint16_t)(scale_factor * w), sh = (uint16_t)(scale_factor * h);
 
@@ -128,8 +130,8 @@ static void image_write_upscale(image_t *image, display_t *display,
 
   for (int y = 0; y < sh; y++) {
     for (int x = 0; x < sw; x++) {
-      float px = (downscale_factor * (x + 0.5f)) + region.x;
-      float py = (downscale_factor * (y + 0.5f)) + region.y;
+      uint16_t px = (downscale_factor_i * (2*x + 1))/(downscale_precision * 2) + region.x;
+      uint16_t py = (downscale_factor_i * (2*y + 1))/(downscale_precision * 2) + region.y;
 
       display_pixel_t result_display = image_get_pixel(image, px, py);
       display_set_pixel(display, x + beg_x, y + beg_y, result_display);
