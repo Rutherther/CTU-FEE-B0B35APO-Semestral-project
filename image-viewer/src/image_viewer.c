@@ -102,6 +102,9 @@ void command_handler_zoom_reset(void *data, int amount) {
   image_viewer_t *viewer = (image_viewer_t *)data;
   logger_debug(viewer->logger, __FILE__, __FUNCTION__, __LINE__,
                "Zoom reset by %d", amount);
+  viewer->region = image_region_create(0, 0, viewer->image.width, viewer->image.height);
+  image_viewer_display_image(viewer);
+  cursor_show(&viewer->cursor, viewer->display);
 }
 
 void image_viewer_register_commands(image_viewer_t *viewer, commands_t *commands) {
