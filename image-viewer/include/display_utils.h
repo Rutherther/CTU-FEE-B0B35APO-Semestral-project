@@ -2,6 +2,7 @@
 #define __DISPLAY_UTILS_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define DISPLAY_MAX_RED 31u
 #define DISPLAY_MAX_GREEN 63u
@@ -53,7 +54,7 @@ display_t display_init(display_data_t data);
 void display_deinit(display_t *display);
 
 void display_render(display_t *display);
-void display_clear(display_t *display);
+void display_clear(display_t *display, bool render);
 
 display_pixel_t display_get_pixel(display_t *display, uint16_t x, uint16_t y);
 void display_set_pixel(display_t *display, uint16_t x, uint16_t y,

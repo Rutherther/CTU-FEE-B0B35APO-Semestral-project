@@ -5,6 +5,7 @@
 #ifdef COMPUTER
 #include "xwin_sdl.h"
 #endif
+
 const display_pixel_t BLACK_PIXEL = {.bits = 0};
 const display_pixel_t WHITE_PIXEL = {.bits = 0xFFFF};
 
@@ -50,12 +51,13 @@ display_t display_init(display_data_t data) {
 
   if (data.base_address != NULL) {
     parlcd_hx8357_init(data.base_address);
-    display_clear(&display);
+    display_clear(&display, true);
   }
 
   #ifdef COMPUTER
   xwin_init(DISPLAY_WIDTH, DISPLAY_HEIGHT);
   #endif
+
   return display;
 }
 void display_deinit(display_t *display) {
@@ -84,19 +86,19 @@ void display_render(display_t *display) {
   for (int i = 0; i < count; i++) {
     parlcd_write_data(display->data.base_address, display->pixels[i].bits);
   }
+  #endif
 }
 
-void display_clear(display_t *display) {
-  if (display->data.base_address == NULL) {
-    return;
-  }
+void display_clear(display_t *display, bool render) {
 
   int count = DISPLAY_HEIGHT * DISPLAY_WIDTH;
   for (int i = 0; i < count; i++) {
     display->pixels[i] = BLACK_PIXEL;
   }
 
-  display_render(display);
+  if (render) {
+    display_render(display);
+  }
 }
 
 display_pixel_t display_get_pixel(display_t *display, uint16_t x, uint16_t y) {
