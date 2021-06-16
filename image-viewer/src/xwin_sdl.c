@@ -1,9 +1,4 @@
-/*
- * File name: xwin_sdl.c
- * Date:      2015/06/18 14:37
- * Author:    Jan Faigl
- */
-
+#ifdef COMPUTER
 #include <assert.h>
 
 #include <SDL.h>
@@ -69,3 +64,5 @@ bool xwin_poll_event(SDL_Event *event) {
 }
 
 /* end of xwin_sdl.c */
+
+#endif

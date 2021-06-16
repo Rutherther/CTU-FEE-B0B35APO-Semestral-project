@@ -13,11 +13,13 @@ const raw_pixel_t DISPLAY_PIXEL_MAX = {.red = (uint16_t)DISPLAY_MAX_RED,
                                        .green = (uint16_t)DISPLAY_MAX_GREEN,
                                        .blue = (uint16_t)DISPLAY_MAX_BLUE};
 
+#ifdef COMPUTER
 static void display_pixel_to_rgb(display_pixel_t pixel, uint8_t *target) {
   *(target++) = ((float)pixel.fields.r / DISPLAY_MAX_RED) * 255;
   *(target++) = ((float)pixel.fields.g / DISPLAY_MAX_GREEN) * 255;
   *(target++) = ((float)pixel.fields.b / DISPLAY_MAX_BLUE) * 255;
 }
+#endif
 
 display_pixel_t raw_pixel_onebit_convert_to_display(raw_pixel_onebit_t pixel,
                                                     raw_pixel_onebit_t max) {
