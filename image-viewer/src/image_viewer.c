@@ -19,13 +19,15 @@ image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t 
     .region = image_region_create(0, 0, 0, 0),
     .logger = logger,
     .display_region = image_region_create(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT),
+    .image_region = image_region_create(0, 0, 0, 0),
     .scale_factor = 0
   };
 
   viewer.error = image_loader_load(&viewer.image);
 
   if (viewer.error == IMERR_SUCCESS) {
-    viewer.region = image_region_create(0, 0, viewer.image.width, viewer.image.height);
+    viewer.region = viewer.image_region =
+        image_region_create(0, 0, viewer.image.width, viewer.image.height);
     cursor_center(&viewer.cursor, viewer.display_region);
   }
 

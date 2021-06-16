@@ -36,8 +36,8 @@ image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width,
 
 bool image_region_move_within(image_region_t *to_move, direction_t direction,
                               int amount, image_region_t *border) {
-  uint16_t x = to_move->x;
-  uint16_t y = to_move->y;
+  int32_t x = to_move->x;
+  int32_t y = to_move->y;
 
   if (x < border->x) {
     x = border->x;

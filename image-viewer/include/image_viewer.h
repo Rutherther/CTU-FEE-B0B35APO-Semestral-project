@@ -11,6 +11,7 @@ typedef struct {
   image_t image;
   cursor_t cursor;
   image_region_t region;
+  image_region_t image_region;
   image_region_t display_region;
   image_error_t error;
 
