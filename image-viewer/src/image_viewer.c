@@ -26,6 +26,7 @@ image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t 
 
   if (viewer.error == IMERR_SUCCESS) {
     viewer.region = image_region_create(0, 0, viewer.image.width, viewer.image.height);
+    cursor_center(&viewer.cursor, viewer.display_region);
   }
 
   return viewer;
@@ -38,7 +39,8 @@ void image_viewer_destroy(image_viewer_t *viewer) {
 void command_handler_move_cursor(void *data, direction_t direction, int amount) {
   image_viewer_t *viewer = (image_viewer_t *)data;
 
-  if (!cursor_move(&viewer->cursor, &viewer->display_region, direction, amount)) {
+  cursor_hide(&viewer->cursor, viewer->display);
+  if (!cursor_move(&viewer->cursor, viewer->display_region, direction, amount)) {
     image_region_move_within(&viewer->region, direction, (int)(amount * viewer->scale_factor), &viewer->display_region);
     image_viewer_display_image(viewer);
   }
