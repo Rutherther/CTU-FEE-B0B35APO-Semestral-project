@@ -7,7 +7,7 @@
 #include <time.h>
 #include <stdint.h>
 
-#define CURSOR_SIZE 10
+#define CURSOR_SIZE 9
 
 typedef struct {
   uint16_t x;
