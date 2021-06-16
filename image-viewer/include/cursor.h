@@ -22,8 +22,8 @@ typedef struct {
 extern const display_pixel_t CURSOR_COLOR;
 
 cursor_t cursor_create();
-void cursor_center(cursor_t *cursor, image_region_t *region);
-bool cursor_move(cursor_t *cursor, image_region_t *region, direction_t direction, int16_t amount);
+void cursor_center(cursor_t *cursor, image_region_t region);
+bool cursor_move(cursor_t *cursor, image_region_t region, direction_t direction, int16_t amount);
 
 void cursor_show(cursor_t *cursor, display_t *display);
 void cursor_hide(cursor_t *cursor, display_t *display);

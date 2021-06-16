@@ -16,25 +16,25 @@ cursor_t cursor_create() {
   return cursor;
 }
 
-void cursor_center(cursor_t *cursor, image_region_t *region) {
-  cursor->x = region->x + region->width / 2;
-  cursor->y = region->y + region->height / 2;
+void cursor_center(cursor_t *cursor, image_region_t region) {
+  cursor->x = region.x + region.width / 2;
+  cursor->y = region.y + region.height / 2;
 }
 
-bool cursor_move(cursor_t *cursor, image_region_t *region, direction_t direction, int16_t amount) {
+bool cursor_move(cursor_t *cursor, image_region_t region, direction_t direction, int16_t amount) {
   uint16_t x = cursor->x, y = cursor->y;
   direction_move_xy(direction, &x, &y, amount);
 
-  if (x < region->x) {
-    x = region->x;
-  } else if (x > region->x + region->width - 1) {
-    x = region->x + region->width - 1;
+  if (x < region.x) {
+    x = region.x;
+  } else if (x > region.x + region.width - 1) {
+    x = region.x + region.width - 1;
   }
 
-  if (y < region->y) {
-    y = region->y;
-  } else if (y > region->y + region->height - 1) {
-    y = region->y + region->height - 1;
+  if (y < region.y) {
+    y = region.y;
+  } else if (y > region.y + region.height - 1) {
+    y = region.y + region.height - 1;
   }
 
   bool moved = cursor->x != x || cursor->y != y;
