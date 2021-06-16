@@ -157,6 +157,7 @@ static void image_write_direct(image_t *image, display_t *display,
 
 double image_write_to_display(image_t *image, display_t *display,
                               image_region_t region, image_region_t display_region) {
+  display_clear(display, false);
   uint16_t w = region.width, h = region.height;
   if (w == display_region.width && h == display_region.height) {
     // write directly to image
