@@ -13,24 +13,24 @@
 
 typedef union {
   struct {
-    uint8_t r : 5;
-    uint8_t g : 6;
     uint8_t b : 5;
-  } fields;
+    uint8_t g : 6;
+    uint8_t r : 5;
+  } __attribute__((__packed__)) fields;
   uint16_t bits;
-} display_pixel_t;
+} __attribute__((__packed__)) display_pixel_t;
 
 typedef struct {
   uint8_t red;
   uint8_t green;
   uint8_t blue;
-} raw_pixel_onebit_t;
+} __attribute__((__packed__)) raw_pixel_onebit_t;
 
 typedef struct {
   uint16_t red;
   uint16_t green;
   uint16_t blue;
-} raw_pixel_t;
+} __attribute__((__packed__)) raw_pixel_t;
 
 typedef struct {
   void* base_address;
