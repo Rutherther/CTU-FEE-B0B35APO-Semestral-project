@@ -1,4 +1,5 @@
 #include "image.h"
+#include "direction.h"
 #include "display_utils.h"
 #include <stdlib.h>
 
@@ -38,17 +39,18 @@ bool image_region_move_within(image_region_t *to_move, direction_t direction,
                               int amount, image_region_t *border) {
   int32_t x = to_move->x;
   int32_t y = to_move->y;
+  direction_move_xy(direction, &x, &y, amount);
 
   if (x < border->x) {
     x = border->x;
   } else if (x + to_move->width >= border->width + border->x) {
-    x = border->x + border->width - 1;
+    x = border->x + border->width - 1 - to_move->width;
   }
 
   if (y < border->y) {
     y = border->y;
   } else if (y + to_move->height >= border->height + border->y) {
-    y = border->x + border->height - 1;
+    y = border->x + border->height - 1 - to_move->height;
   }
 
   bool changed = to_move->x != x || to_move->y != y;
