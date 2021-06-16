@@ -49,7 +49,7 @@ void cursor_show(cursor_t *cursor, display_t *display) {
   cursor->shown = true;
 
   uint16_t base_x = cursor->x;
-  uint16_t base_y = cursor->x;
+  uint16_t base_y = cursor->y;
 
   uint16_t first_x = base_x - CURSOR_SIZE / 2;
   uint16_t first_y = base_y - CURSOR_SIZE / 2;
@@ -72,7 +72,7 @@ void cursor_hide(cursor_t *cursor, display_t *display) {
   }
 
   uint16_t base_x = cursor->x;
-  uint16_t base_y = cursor->x;
+  uint16_t base_y = cursor->y;
 
   uint16_t first_x = base_x - CURSOR_SIZE / 2;
   uint16_t first_y = base_y - CURSOR_SIZE / 2;
