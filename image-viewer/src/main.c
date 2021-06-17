@@ -44,8 +44,6 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Image %s will be loaded.", argv[1]);
 
   display_data_t display_data = {
     .base_address = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0),
@@ -63,15 +61,26 @@ int main(int argc, char *argv[])
   logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
               "Display initialized...", argv[1]);
 
-  logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Starting image viewer...", argv[1]);
+  logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
+              "Image %s will be loaded.", argv[1]);
 
   image_viewer_t viewer = image_viewer_create(argv[1], &display, &logger);
+
   if (viewer.error != IMERR_SUCCESS) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not load image %d", viewer.error);
   }
 
+  logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
+              "Loaded image of size %d %d", viewer.image.width,
+              viewer.image.height);
+
+  logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
+               "Displaying image...", argv[1]);
+
   image_viewer_display_image(&viewer);
+
+  logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
+               "Starting image viewer...", argv[1]);
   image_viewer_start_loop(&viewer, reg_knobs_base);
 
   logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
