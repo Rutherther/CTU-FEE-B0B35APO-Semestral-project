@@ -54,8 +54,6 @@ coords_t image_get_screen_coords(image_t *image, image_zoom_t zoom,
       image_get_zoom_region(image, zoom);
   double relative_x = (double)(image_coords.x - (int32_t)image_region.x) / image_region.width;
   double relative_y = (double)(image_coords.y - (int32_t)image_region.y) / image_region.height;
-  printf("(%d - %hu) - %hu = %f\r\n", image_coords.x, image_region.x, image_region.width, relative_x);
-  printf("image: %f %f\r\n", relative_x, relative_y);
 
   coords_t screen_coords = coords_create(beg.x + relative_x * (end.x - beg.x),
                                          beg.y + relative_y * (end.y - beg.y));
@@ -71,7 +69,6 @@ coords_t image_get_image_coords(image_t *image, image_zoom_t zoom,
       image_get_zoom_region(image, zoom);
   double relative_x = (double)(screen_coords.x - beg.x) / (end.x - beg.x);
   double relative_y = (double)(screen_coords.y - beg.y) / (end.y - beg.y);
-  printf("screen: %f %f\r\n", relative_x, relative_y);
 
   coords_t image_coords =
       coords_create(image_region.x + relative_x * image_region.width,
