@@ -290,6 +290,9 @@ void image_viewer_start_loop(image_viewer_t *viewer, void *reg_knobs_base) {
   commands_t commands = commands_create(command_array, COMMANDS_NUM, reg_knobs_base);
 
   image_viewer_register_commands(viewer, &commands);
+  ledstrip_turn_on(
+      &viewer->ledstrip,
+      ((double)viewer->cursor.x / viewer->image.width) * LED_STRIP_COUNT, 1);
 
   viewer->running = true;
   time_t now = time(NULL);
