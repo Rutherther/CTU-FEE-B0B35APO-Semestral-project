@@ -11,7 +11,7 @@
 
 #define BUFFER_LENGTH 4
 
-image_error_t image_loader_load(image_t *image) {
+image_error_t image_loader_load(image_t *image, image_load_callback callback, void *state) {
   image_error_t error = image_deduce_type(image);
   if (error != IMERR_SUCCESS) {
     return error;
@@ -19,11 +19,11 @@ image_error_t image_loader_load(image_t *image) {
 
   switch (image->type) {
   case IMG_PPM:
-    return image_loader_load_ppm(image);
+    return image_loader_load_ppm(image, callback, state);
   case IMG_JPG:
-    return image_loader_load_jpeg(image);
+    return image_loader_load_jpeg(image, callback, state);
   case IMG_PNG:
-    return image_loader_load_png(image);
+    return image_loader_load_png(image, callback, state);
   case IMG_UNKNOWN:
     return IMERR_UNKNOWN_FORMAT;
   }
@@ -42,7 +42,8 @@ image_error_t image_error_from_errno() {
   }
 }
 
-image_error_t image_loader_load_ppm(image_t *image) {
+image_error_t image_loader_load_ppm(image_t *image,
+                                    image_load_callback callback, void *state) {
   FILE *file = fopen(image->path, "r");
   if (file == NULL) {
     return image_error_from_errno();
@@ -73,14 +74,16 @@ image_error_t image_loader_load_ppm(image_t *image) {
     }
 
     image->pixels[i] = raw_pixel_onebit_convert_to_display(pixel, max);
+    callback(state, (double)i / (image->height * image->width));
   }
 
   fclose(file);
   return IMERR_SUCCESS;
 }
 
-
-image_error_t image_loader_load_jpeg(image_t *image) {
+image_error_t image_loader_load_jpeg(image_t *image,
+                                     image_load_callback callback,
+                                     void *state) {
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
 
@@ -114,6 +117,7 @@ image_error_t image_loader_load_jpeg(image_t *image) {
   while (cinfo.output_scanline < cinfo.output_height) {
     row_pointer[0] = &out[cinfo.output_scanline * cinfo.image_width * 2];
     jpeg_read_scanlines(&cinfo, row_pointer, 1);
+    callback(state, (double)cinfo.output_scanline / cinfo.output_height);
   }
 
   jpeg_finish_decompress(&cinfo);
@@ -124,7 +128,8 @@ image_error_t image_loader_load_jpeg(image_t *image) {
   return IMERR_SUCCESS;
 }
 
-image_error_t image_loader_load_png(image_t *image) {
+image_error_t image_loader_load_png(image_t *image,
+                                    image_load_callback callback, void *state) {
   FILE *infile = fopen(image->path, "r");
   if (infile == NULL) {
     return image_error_from_errno();
@@ -184,6 +189,7 @@ image_error_t image_loader_load_png(image_t *image) {
 
   for (int i = 0; i < image->height; i++) {
     row_pointers[i] = malloc(png_get_rowbytes(png, info));
+    callback(state, 0.5 * ((double)i / image->height));
   }
 
   png_read_image(png, row_pointers);
@@ -210,6 +216,8 @@ image_error_t image_loader_load_png(image_t *image) {
       pixels[y * image->width + x].fields.g = ((double)px[1] * alpha / coef) * DISPLAY_MAX_GREEN;
       pixels[y * image->width + x].fields.b = ((double)px[2] * alpha / coef) * DISPLAY_MAX_BLUE;
     }
+
+    callback(state, 0.5 + 0.5 * ((double)y / image->height));
   }
 
   image->pixels = pixels;

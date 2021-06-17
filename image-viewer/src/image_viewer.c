@@ -17,7 +17,13 @@
 #define MAX_ZOOM 10
 #define MIN_ZOOM 0.02
 
+void loader_callback(void *state, double p) {
+  mzapo_ledstrip_t *ledstrip = (mzapo_ledstrip_t*)state;
+  ledstrip_progress_bar_step(ledstrip, p * LED_STRIP_COUNT);
+}
+
 image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t *logger, mzapo_ledstrip_t ledstrip) {
+
   image_viewer_t viewer = {
     .display = display,
     .image = image_create(filename),
@@ -28,7 +34,8 @@ image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t 
     .ledstrip = ledstrip,
   };
 
-  viewer.error = image_loader_load(&viewer.image);
+  viewer.error = image_loader_load(&viewer.image, loader_callback, &ledstrip);
+  ledstrip_clear(&ledstrip);
 
   if (viewer.error == IMERR_SUCCESS) {
     viewer.image_region =
