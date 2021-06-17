@@ -35,11 +35,12 @@ void ledstrip_turn_on(mzapo_ledstrip_t *ledstrip, uint8_t index,
   index -= around;
 
   for (int i = 0; i < around * 2 + 1; i++) {
-    if (index + i >= LED_STRIP_COUNT || index + i < 0) {
-      
+    uint8_t led_strip_i = i + index;
+    if (led_strip_i >= LED_STRIP_COUNT) {
+      continue;
     }
 
-    ledstrip->strip |= 1 << (LED_STRIP_COUNT - (i + index));
+    ledstrip->strip |= 1 << (LED_STRIP_COUNT - 1 - led_strip_i);
   }
 
   ledstrip_write(ledstrip);
@@ -52,7 +53,7 @@ void ledstrip_progress_bar_step(mzapo_ledstrip_t *ledstrip, int8_t steps) {
   ledstrip->on_around_index = 0;
 
   for (int i = 0; i < ledstrip->load; i++) {
-    ledstrip->strip |= 1 << i;
+    ledstrip->strip |= 1 << (LED_STRIP_COUNT - 1 - i);
   }
 
   ledstrip_write(ledstrip);
