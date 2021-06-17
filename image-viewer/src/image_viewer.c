@@ -46,16 +46,47 @@ void command_handler_move_cursor(void *data, direction_t direction, int amount) 
   image_viewer_t *viewer = (image_viewer_t *)data;
 
   cursor_hide(&viewer->cursor, &viewer->image, viewer->scale, viewer->display);
-  if (!cursor_move(&viewer->cursor,
-                   image_get_zoom_region(&viewer->image, viewer->scale),
-                   direction, amount / viewer->scale.scale)) {
-    direction_move_xy(direction, (int32_t*)&viewer->scale.x, (int32_t*)&viewer->scale.y, amount / viewer->scale.scale);
+  int32_t x = viewer->scale.x, y = viewer->scale.y;
+  bool move_cursor = false;
+  switch (viewer->mode) {
+  case MOD_CURSOR:
+    if (!cursor_move(&viewer->cursor,
+                     image_get_zoom_region(&viewer->image, viewer->scale),
+                     direction, amount / viewer->scale.scale)) {
+      direction_move_xy(direction, &x,
+                        &y,
+                        amount / viewer->scale.scale);
+      move_cursor = true;
+    }
+    break;
+  case MOD_IMAGE:
+    logger_debug(viewer->logger, __FILE__, __FUNCTION__, __LINE__, "Moving image");
+    direction_move_xy(direction, &x,
+                      &y,
+                      amount / viewer->scale.scale);
+    move_cursor = true;
+    break;
+  default:
+    break;
+  }
+
+  if (x < 0) {
+    x = 0;
+  }
+  if (y < 0) {
+    y = 0;
+  }
+
+  viewer->scale.x = x;
+  viewer->scale.y = y;
+
+  if (move_cursor) {
     cursor_move(&viewer->cursor,
                 image_get_zoom_region(&viewer->image, viewer->scale), direction,
                 amount / viewer->scale.scale);
-    image_viewer_display_image(viewer);
   }
 
+  image_viewer_display_image(viewer);
   cursor_show(&viewer->cursor, &viewer->image, viewer->scale, viewer->display);
   display_render(viewer->display);
 }
@@ -186,6 +217,24 @@ void command_handler_zoom_reset(void *data, int amount) {
   cursor_show(&viewer->cursor, &viewer->image, viewer->scale, viewer->display);
 }
 
+void command_handler_change_mode(void *data, int amount) {
+  if (!amount) {
+    return;
+  }
+
+  image_viewer_t *viewer = (image_viewer_t *)data;
+  logger_debug(viewer->logger, __FILE__, __FUNCTION__, __LINE__,
+               "Changing mode");
+
+  uint8_t mode = viewer->mode;
+  mode++;
+  if (mode >= MOD_COUNT) {
+    mode %= MOD_COUNT;
+  }
+
+  viewer->mode = mode;
+}
+
 void image_viewer_register_commands(image_viewer_t *viewer, commands_t *commands) {
   commands_register(commands, IN_KEYBOARD, 'h', &command_handler_move_left,
                     viewer);
@@ -205,6 +254,8 @@ void image_viewer_register_commands(image_viewer_t *viewer, commands_t *commands
                     viewer);
   commands_register(commands, IN_KEYBOARD, 'r', &command_handler_zoom_reset,
                     viewer);
+  commands_register(commands, IN_KEYBOARD, 'm', &command_handler_change_mode,
+                    viewer);
 
   commands_register(commands, IN_ENCODER_ROTATE, 0, &command_handler_move_right,
                     viewer);
@@ -214,6 +265,9 @@ void image_viewer_register_commands(image_viewer_t *viewer, commands_t *commands
                     viewer);
 
   commands_register(commands, IN_ENCODER_CLICK, 0, &command_handler_exit,
+                    viewer);
+
+  commands_register(commands, IN_ENCODER_CLICK, 1, &command_handler_change_mode,
                     viewer);
 
   commands_register(commands, IN_ENCODER_CLICK, 2, &command_handler_zoom_reset,
