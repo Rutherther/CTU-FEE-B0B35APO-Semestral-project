@@ -2,6 +2,7 @@
 #include "direction.h"
 #include "display_utils.h"
 #include "image.h"
+#include "coords.h"
 
 const display_pixel_t CURSOR_COLOR = {.fields = {.r = (uint8_t)DISPLAY_MAX_RED, .g = 0, .b = 0}};
 
@@ -43,13 +44,16 @@ bool cursor_move(cursor_t *cursor, image_region_t region, direction_t direction,
   return moved;
 }
 
-void cursor_show(cursor_t *cursor, display_t *display) {
-  cursor_hide(cursor, display);
+void cursor_show(cursor_t *cursor, image_t *image, image_zoom_t zoom,
+                 display_t *display) {
+  cursor_hide(cursor, image, zoom, display);
   cursor->shown_at = time(NULL);
   cursor->shown = true;
 
-  uint16_t base_x = cursor->x;
-  uint16_t base_y = cursor->y;
+  coords_t screen_coords =
+      image_get_screen_coords(image, zoom, coords_create(cursor->x, cursor->y));
+  uint16_t base_x = screen_coords.x;
+  uint16_t base_y = screen_coords.y;
 
   uint16_t first_x = base_x - CURSOR_SIZE / 2;
   uint16_t first_y = base_y - CURSOR_SIZE / 2;
@@ -66,13 +70,16 @@ void cursor_show(cursor_t *cursor, display_t *display) {
   }
 }
 
-void cursor_hide(cursor_t *cursor, display_t *display) {
+void cursor_hide(cursor_t *cursor, image_t *image, image_zoom_t zoom,
+                 display_t *display) {
   if (!cursor->shown) {
     return;
   }
 
-  uint16_t base_x = cursor->x;
-  uint16_t base_y = cursor->y;
+  coords_t screen_coords =
+      image_get_screen_coords(image, zoom, coords_create(cursor->x, cursor->y));
+  uint16_t base_x = screen_coords.x;
+  uint16_t base_y = screen_coords.y;
 
   uint16_t first_x = base_x - CURSOR_SIZE / 2;
   uint16_t first_y = base_y - CURSOR_SIZE / 2;

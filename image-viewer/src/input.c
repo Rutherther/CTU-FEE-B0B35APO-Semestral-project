@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #define ROTATION_DELTA 0
 #define ENCODERS_MAX 255

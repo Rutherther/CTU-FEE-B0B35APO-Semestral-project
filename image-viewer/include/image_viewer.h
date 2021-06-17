@@ -10,15 +10,13 @@
 typedef struct {
   image_t image;
   cursor_t cursor;
-  image_region_t region;
+  image_zoom_t scale;
   image_region_t image_region;
   image_region_t display_region;
   image_error_t error;
 
   display_t *display;
   bool running;
-
-  double scale_factor;
 
   logger_t *logger;
 } image_viewer_t;

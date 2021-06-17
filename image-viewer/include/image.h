@@ -42,6 +42,12 @@ typedef struct {
 typedef struct {
   uint16_t x;
   uint16_t y;
+  double scale;
+} image_zoom_t;
+
+typedef struct {
+  uint16_t x;
+  uint16_t y;
 
   uint16_t width;
   uint16_t height;
@@ -59,8 +65,10 @@ image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width, uint1
 bool image_region_move_within(image_region_t *to_move, direction_t direction,
                               int amount, image_region_t *border);
 
-double image_write_to_display(image_t *image, display_t *display,
-                              image_region_t region,
-                              image_region_t display_region);
+image_zoom_t image_write_to_display(image_t *image, display_t *display,
+                              image_zoom_t scale);
+
+image_zoom_t image_get_initial_zoom(image_t *image);
+image_region_t image_get_zoom_region(image_t *image, image_zoom_t zoom);
 
 #endif // __IMAGE_H__

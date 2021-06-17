@@ -76,21 +76,6 @@ void image_set_pixel(image_t *image, uint16_t x, uint16_t y,
   image->pixels[y * image->width + x] = pixel;
 }
 
-double get_scale_factor(uint16_t w, uint16_t h, image_region_t display_region) {
-  double scale_x = (double)display_region.width / (double)w;
-  double scale_y = (double)display_region.height / (double)h;
-
-  double max = scale_x > scale_y ? scale_x : scale_y;
-  double min = scale_x <= scale_y ? scale_x : scale_y;
-  double scale = max;
-
-  if (w * max > display_region.width || h * max > display_region.height) {
-    scale = min;
-  }
-
-  return scale;
-}
-
 static void image_write_downscale(image_t *image, display_t *display,
                                   image_region_t region, image_region_t display_region, double scale_factor) {
   float downscale_factor = 1 / scale_factor;
@@ -148,17 +133,74 @@ static void image_write_direct(image_t *image, display_t *display,
   }
 }
 
-double image_write_to_display(image_t *image, display_t *display,
-                              image_region_t region, image_region_t display_region) {
-  display_clear(display, false);
-  uint16_t w = region.width, h = region.height;
-  if (w == display_region.width && h == display_region.height) {
-    // write directly to image
-    image_write_direct(image, display, region, display_region);
-    return 1;
+double min(double a, double b) {
+  return a < b ? a : b;
+}
+
+image_zoom_t image_get_initial_zoom(image_t *image) {
+  double scale_x = (double)DISPLAY_WIDTH / image->width;
+  double scale_y = (double)DISPLAY_HEIGHT / image->height;
+
+  double scale = min(min(scale_x, scale_y), 1);
+
+  image_zoom_t zoom = {
+    .scale = scale,
+    .x = 0,
+    .y = 0,
+  };
+
+  return zoom;
+}
+
+image_region_t image_get_zoom_region(image_t *image, image_zoom_t zoom) {
+  double fits_screen_width = DISPLAY_WIDTH / (double)(image->width * zoom.scale);
+  double fits_screen_height =
+      DISPLAY_HEIGHT / (double)(image->height * zoom.scale);
+
+  uint16_t width = fits_screen_width * image->width;
+  uint16_t height = fits_screen_height * image->height;
+
+  if (fits_screen_width > 1) {
+    width = image->width;
   }
 
-  double scale = get_scale_factor(w, h, display_region);
+  if (fits_screen_height > 1) {
+    height = image->height;
+  }
+
+  image_region_t region = {
+    .x = zoom.x,
+    .y = zoom.y,
+    .width = width,
+    .height = height
+  };
+
+  if (region.x + region.width > image->width) {
+    region.x = image->width - region.width;
+  }
+
+  if (region.y + region.height > image->height) {
+    region.y = image->height - region.height;
+  }
+
+  return region;
+}
+
+image_zoom_t image_write_to_display(image_t *image, display_t *display,
+                              image_zoom_t zoom) {
+  display_clear(display, false);
+  image_region_t region = image_get_zoom_region(image, zoom);
+  zoom.x = region.x;
+  zoom.y = region.y;
+
+  image_region_t display_region = image_region_create(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+  if (zoom.scale == 1) {
+    // write directly to image
+    image_write_direct(image, display, region, display_region);
+    return zoom;
+  }
+
+  double scale = zoom.scale;
 
   // scaling
   if (scale < 1) {
@@ -167,5 +209,5 @@ double image_write_to_display(image_t *image, display_t *display,
     image_write_upscale(image, display, region, display_region, scale);
   }
 
-  return scale;
+  return zoom;
 }
