@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 
   if (viewer.error != IMERR_SUCCESS) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not load image %d", viewer.error);
+    return 1;
   }
 
   logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
