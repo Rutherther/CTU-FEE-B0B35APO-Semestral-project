@@ -35,7 +35,7 @@ copy-executable: all
 	ssh $(SSH_OPTIONS) $(TARGET_USER)@$(TARGET_IP) mv $(TARGET_DIR)/bin/* $(TARGET_DIR)
 
 run-image-viewer: copy-executable all 
-	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) LD_LIBRARY_PATH=$(TARGET_DIR) $(TARGET_DIR)/image-viewer $(ARG)
+	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/image-viewer $(ARG)
 
 clean:
 	@make -C image-viewer clean

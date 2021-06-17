@@ -16,11 +16,12 @@ CFLAGS =-g -std=gnu99 -O1 -Wall -D ILI9481
 CXXFLAGS = -g -std=gnu++11 -O1 -Wall
 
 ifdef COMPUTER
-LDFLAGS = $(LIB_DIR) -lrt -lmzapo_pheripherals -lpthread -lmagic -ljpeg -lpng $(shell sdl2-config --libs) -lSDL2_image
+LDFLAGS = -lrt -lmzapo_pheripherals -lpthread -lmagic -ljpeg -lpng $(shell sdl2-config --libs) -lSDL2_image
 CFLAGS += -DCOMPUTER $(shell sdl2-config --cflags)
 else
-LDFLAGS = $(LIB_DIR) -lrt -lmzapo_pheripherals -lpthread -l :libmagic.so.1 -l :libjpeg.so.62 -l :libz.so -l :libpng16.so.16
+LDFLAGS = -lrt -lmzapo_pheripherals -lpthread -l :libmagic.so.1 -l :libjpeg.so.62 -l :libz.so -l :libpng16.so.16
 endif
+LDFLAGS += -Wl,-rpath,'$${ORIGIN}' $(LIB_DIR)
 
 NAME=image-viewer
 BINARY=$(BIN_DIR)/$(NAME)
