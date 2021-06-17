@@ -80,7 +80,7 @@ copy-executable: $(BINARY)
 	scp $(SSH_OPTIONS) $(BINARY) $(TARGET_USER)@$(TARGET_IP):$(TARGET_DIR)/$(NAME)
 
 run: copy-executable $(BINARY)
-	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/$(NAME)
+	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/$(NAME) $(ARG)
 
 ifneq ($(filter -o ProxyJump=,$(SSH_OPTIONS))$(SSH_GDB_TUNNEL_REQUIRED),)
 SSH_GDB_PORT_FORWARD=-L 12345:127.0.0.1:12345
