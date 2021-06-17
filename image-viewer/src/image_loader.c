@@ -3,7 +3,9 @@
 
 #include <asm-generic/errno-base.h>
 #include <errno.h>
+#include <jpeglib.h>
 #include <magic.h>
+#include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -79,11 +81,140 @@ image_error_t image_loader_load_ppm(image_t *image) {
 
 
 image_error_t image_loader_load_jpeg(image_t *image) {
-  return IMERR_WRONG_FORMAT;
+  struct jpeg_decompress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+
+  JSAMPROW row_pointer[1];
+
+  FILE *infile = fopen(image->path, "r");
+  if (infile == NULL) {
+    return image_error_from_errno();
+  }
+
+  cinfo.err = jpeg_std_error(&jerr);
+
+  jpeg_create_decompress(&cinfo);
+  jpeg_stdio_src(&cinfo, infile);
+  jpeg_read_header(&cinfo, TRUE);
+  // handle errors
+
+  image->width = cinfo.image_width;
+  image->height = cinfo.image_height;
+
+  int image_size = cinfo.image_width * cinfo.image_height * 2;
+  unsigned char *out = malloc(image_size);
+  if (out == NULL) {
+    return IMERR_UNKNOWN;
+    fclose(infile);
+  }
+
+  cinfo.out_color_space = JCS_RGB565;
+  jpeg_start_decompress(&cinfo);
+
+  while (cinfo.output_scanline < cinfo.output_height) {
+    row_pointer[0] = &out[cinfo.output_scanline * cinfo.image_width * 2];
+    jpeg_read_scanlines(&cinfo, row_pointer, 1);
+  }
+
+  jpeg_finish_decompress(&cinfo);
+  jpeg_destroy_decompress(&cinfo);
+  fclose(infile);
+  
+  image->pixels = (display_pixel_t*)out;
+  return IMERR_SUCCESS;
 }
 
 image_error_t image_loader_load_png(image_t *image) {
-  return IMERR_WRONG_FORMAT;
+  FILE *infile = fopen(image->path, "r");
+  if (infile == NULL) {
+    return image_error_from_errno();
+  }
+
+  png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if (png == NULL) {
+    return IMERR_UNKNOWN;
+  }
+
+  png_infop info = png_create_info_struct(png);
+  if (info == NULL) {
+    return IMERR_WRONG_FORMAT;
+  }
+
+  png_init_io(png, infile);
+  png_read_info(png, info);
+
+  image->width = png_get_image_width(png, info);
+  image->height = png_get_image_height(png, info);
+  png_byte color_type = png_get_color_type(png, info);
+  png_byte bit_depth = png_get_bit_depth(png, info);
+
+  if (bit_depth == 16) {
+    png_set_strip_16(png);
+  }
+
+  if (color_type == PNG_COLOR_TYPE_PALETTE) {
+    png_set_palette_to_rgb(png);
+  }
+
+  if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
+    png_set_expand_gray_1_2_4_to_8(png);
+  }
+
+  if (png_get_valid(png, info, PNG_INFO_tRNS))
+    png_set_tRNS_to_alpha(png);
+
+  if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_GRAY ||
+      color_type == PNG_COLOR_TYPE_PALETTE) {
+    png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
+  }
+
+  if (color_type == PNG_COLOR_TYPE_GRAY ||
+      color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+    png_set_gray_to_rgb(png);
+  }
+
+  png_read_update_info(png, info);
+
+  png_bytep *row_pointers = malloc(sizeof(png_bytep) * image->height);
+  if (row_pointers == NULL) {
+    png_destroy_read_struct(&png, &info, NULL);
+    fclose(infile);
+    return IMERR_UNKNOWN;
+  }
+
+  for (int i = 0; i < image->height; i++) {
+    row_pointers[i] = malloc(png_get_rowbytes(png, info));
+  }
+
+  png_read_image(png, row_pointers);
+
+  fclose(infile);
+  png_destroy_read_struct(&png, &info, NULL);
+
+  display_pixel_t *pixels = malloc(sizeof(display_pixel_t) * image->width * image->height);
+  if (pixels == NULL) {
+    png_destroy_read_struct(&png, &info, NULL);
+    free(row_pointers);
+    fclose(infile);
+    return IMERR_UNKNOWN;
+  }
+
+  for (int y = 0; y < image->height; y++) {
+    png_bytep row = row_pointers[y];
+    for (int x = 0; x < image->width; x++) {
+      png_bytep px = &(row[x * 4]);
+      int alpha = px[3];
+
+      int coef = 255 * 255;
+      pixels[y * image->width + x].fields.r = ((double)px[0] * alpha / coef) * DISPLAY_MAX_RED;
+      pixels[y * image->width + x].fields.g = ((double)px[1] * alpha / coef) * DISPLAY_MAX_GREEN;
+      pixels[y * image->width + x].fields.b = ((double)px[2] * alpha / coef) * DISPLAY_MAX_BLUE;
+    }
+  }
+
+  image->pixels = pixels;
+
+  return IMERR_SUCCESS;
 }
 
 image_error_t image_deduce_type(image_t *image) {
