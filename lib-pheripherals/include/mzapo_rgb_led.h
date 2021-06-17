@@ -11,9 +11,14 @@ typedef enum {
 #ifdef __cplusplus
 extern "C" {
 #endif
+  typedef struct {
+    uint8_t blue;
+    uint8_t green;
+    uint8_t red;
+  } __attribute__((__packed__)) rgb_led_pixel_t;
 
   typedef struct {
-    volatile raw_pixel_onebit_t *mem_base;
+    volatile rgb_led_pixel_t *mem_base;
   } mzapo_rgb_led_t;
 
   mzapo_rgb_led_t rgb_led_create(unsigned char *mem_base);
@@ -24,7 +29,7 @@ extern "C" {
   void rgb_led_set_green(mzapo_rgb_led_t *rgb_led, mzapo_rgb_leds_t id);
   void rgb_led_set_blue(mzapo_rgb_led_t *rgb_led, mzapo_rgb_leds_t id);
 
-  raw_pixel_onebit_t rgb_led_get(mzapo_rgb_led_t *rgb_led, mzapo_rgb_leds_t id);
+  rgb_led_pixel_t rgb_led_get(mzapo_rgb_led_t *rgb_led, mzapo_rgb_leds_t id);
   void rgb_led_clear(mzapo_rgb_led_t *rgb_led, mzapo_rgb_leds_t id);
 
 #ifdef __cplusplus
