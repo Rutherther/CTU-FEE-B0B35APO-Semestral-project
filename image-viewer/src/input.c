@@ -16,6 +16,9 @@ void commands_rotation_encoders_init(commands_t *commands) {
     rotation_encoder_state_t state = {
       .absolute = 0,
       .delta = 0,
+      .button = false,
+      .button_prev = false,
+      .pressed_time = time(NULL)
     };
     commands->encoders.encoders_state[i] = state;
   }
@@ -103,28 +106,31 @@ void commands_update_rotation_encoders(rotation_encoders_t *encoders) {
   uint8_t btns = *(volatile uint8_t*)(encoders->base_address + ROTATION_ENCODERS_COUNT);
 
   for (int i = 0; i < ROTATION_ENCODERS_COUNT; i++) {
-    rotation_encoder_state_t state = encoders->encoders_state[i];
+    int index = ROTATION_ENCODERS_COUNT - i - 1;
+    rotation_encoder_state_t state = encoders->encoders_state[index];
     uint8_t rotation = *(volatile uint8_t*)(encoders->base_address + i);
-    bool btn = (btns >> (7 - i)) & 1;
+    bool btn = (btns >> (i)) & 1;
 
     uint8_t diff = rotation - state.absolute;
-
-    state.delta = (int8_t)diff;
+    state.delta = -((int8_t)diff);
     state.absolute = rotation;
+
+    if (state.button_prev != state.button) {
+      state.button_prev = state.button;
+    }
 
     time_t now = time(NULL);
     if (btn && !state.button) {
       state.button = true;
       state.button_prev = false;
       state.pressed_time = time(NULL);
-
     } else if (!btn && state.button &&
                difftime(now, state.pressed_time) > DEBOUNCE_TIME) {
       state.button = false;
       state.button_prev = true;
     }
 
-    encoders->encoders_state[i] = state;
+    encoders->encoders_state[index] = state;
   }
 }
 
