@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define LED_STRIP_COUNT 30
+#define LED_STRIP_COUNT 32
 
 #ifdef __cplusplus
 extern "C" {
