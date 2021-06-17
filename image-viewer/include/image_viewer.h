@@ -6,6 +6,7 @@
 #include "display_utils.h"
 #include "cursor.h"
 #include "logger.h"
+#include "mzapo_led_strip.h"
 
 typedef enum {
   MOD_CURSOR,
@@ -27,11 +28,13 @@ typedef struct {
   display_t *display;
   bool running;
 
+  mzapo_ledstrip_t ledstrip;
+
   logger_t *logger;
   image_error_t error;
 } image_viewer_t;
 
-image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t *logger);
+image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t *logger, mzapo_ledstrip_t ledstrip);
 void image_viewer_destroy(image_viewer_t *viewer);
 
 void image_viewer_start_loop(image_viewer_t *viewer, void *reg_knobs_base);

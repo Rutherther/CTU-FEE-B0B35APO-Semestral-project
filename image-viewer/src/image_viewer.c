@@ -7,6 +7,7 @@
 #include "logger.h"
 #include "image_loader.h"
 #include "coords.h"
+#include "mzapo_led_strip.h"
 #include <time.h>
 #include <stdlib.h>
 
@@ -16,7 +17,7 @@
 #define MAX_ZOOM 10
 #define MIN_ZOOM 0.02
 
-image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t *logger) {
+image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t *logger, mzapo_ledstrip_t ledstrip) {
   image_viewer_t viewer = {
     .display = display,
     .image = image_create(filename),
@@ -24,6 +25,7 @@ image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t 
     .logger = logger,
     .display_region = image_region_create(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT),
     .image_region = image_region_create(0, 0, 0, 0),
+    .ledstrip = ledstrip,
   };
 
   viewer.error = image_loader_load(&viewer.image);
@@ -89,6 +91,8 @@ void command_handler_move_cursor(void *data, direction_t direction, int amount) 
   image_viewer_display_image(viewer);
   cursor_show(&viewer->cursor, &viewer->image, viewer->scale, viewer->display);
   display_render(viewer->display);
+
+  ledstrip_turn_on(&viewer->ledstrip, ((double)viewer->cursor.x / viewer->image.width) * LED_STRIP_COUNT, 1);
 }
 
 void command_handler_move_left(void *data, int amount) {
