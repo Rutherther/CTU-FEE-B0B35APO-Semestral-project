@@ -38,6 +38,8 @@ int main(int argc, char *argv[])
     }
   }
 
+  mzapo_rgb_led_t led = mzapo_create_rgb_led();
+
   struct termios oldstdin;
   file_set_nonblocking(STDIN_FILENO, &oldstdin);
 
@@ -45,9 +47,9 @@ int main(int argc, char *argv[])
 
   if (argc < 2) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Not enough arguments.");
+    rgb_led_set_red(&led, LED_LEFT);
     return 1;
   }
-
 
   logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
               "Initializing display...", argv[1]);
@@ -58,7 +60,6 @@ int main(int argc, char *argv[])
   logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
               "Image %s will be loaded.", argv[1]);
 
-  mzapo_rgb_led_t led = mzapo_create_rgb_led();
   mzapo_ledstrip_t ledstrip = mzapo_create_ledstrip();
 
   rgb_led_set_green(&led, LED_LEFT);
@@ -69,6 +70,7 @@ int main(int argc, char *argv[])
 
   if (viewer.error != IMERR_SUCCESS) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not load image %d", viewer.error);
+    rgb_led_set_red(&led, LED_RIGHT);
     return 1;
   }
 
