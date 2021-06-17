@@ -141,12 +141,19 @@ int16_t commands_check_input(commands_t * commands) {
     return -1;
   }
 
+  commands_update_rotation_encoders(&commands->encoders);
   rotation_encoders_t encoders = commands->encoders;
-  commands_update_rotation_encoders(&encoders);
   for (int i = 0; i < commands->size; i++) {
     command_t command = commands->commands[i];
     input_t input = command.input;
+    if (input.type != IN_ENCODER_ROTATE && input.type != IN_ENCODER_CLICK) {
+      continue;
+    }
+
     rotation_encoder_state_t state = encoders.encoders_state[(uint8_t)command.input.filter];
+    if (command.input.filter > ROTATION_ENCODERS_COUNT) {
+      return -1;
+    }
 
     bool button_changed = state.button_prev != state.button;
     bool rotation_changed = state.delta != 0;
