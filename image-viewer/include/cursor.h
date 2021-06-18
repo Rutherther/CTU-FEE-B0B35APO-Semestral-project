@@ -7,7 +7,7 @@
 #include <time.h>
 #include <stdint.h>
 
-#define CURSOR_SIZE 9
+#define CURSOR_WIDTH 11
 
 typedef struct {
   uint16_t x;
@@ -16,10 +16,11 @@ typedef struct {
   bool shown;
   time_t shown_at;
 
-  display_pixel_t previous_display_data[CURSOR_SIZE * 2 - 1];
+  display_pixel_t previous_display_data[CURSOR_WIDTH * CURSOR_WIDTH];
 } cursor_t;
 
 extern const display_pixel_t CURSOR_COLOR;
+extern const display_pixel_t CURSOR_OUTLINE_COLOR;
 
 cursor_t cursor_create();
 void cursor_center(cursor_t *cursor, image_region_t region);

@@ -4,7 +4,26 @@
 #include "image.h"
 #include "coords.h"
 
-const display_pixel_t CURSOR_COLOR = {.fields = {.r = (uint8_t)DISPLAY_MAX_RED, .g = 0, .b = 0}};
+const uint8_t CURSOR[] = {
+  0x0, 0x0, 0x0, 0x0, 0x2, 0x2, 0x2, 0x0, 0x0, 0x0, 0x0, // end of 1st line
+  0x0, 0x0, 0x0, 0x0, 0x2, 0x1, 0x2, 0x0, 0x0, 0x0, 0x0, // end of 2nd line
+  0x0, 0x0, 0x0, 0x0, 0x2, 0x1, 0x2, 0x0, 0x0, 0x0, 0x0, // end of 3rd line
+  0x0, 0x0, 0x0, 0x0, 0x2, 0x1, 0x2, 0x0, 0x0, 0x0, 0x0, // end of 4th line
+  0x2, 0x2, 0x2, 0x2, 0x2, 0x1, 0x2, 0x2, 0x2, 0x2, 0x2, // end of 5th line
+  0x2, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x2, // end of 6th line
+  0x2, 0x2, 0x2, 0x2, 0x2, 0x1, 0x2, 0x2, 0x2, 0x2, 0x2, // end of 7th line
+  0x0, 0x0, 0x0, 0x0, 0x2, 0x1, 0x2, 0x0, 0x0, 0x0, 0x0, // end of 8th line
+  0x0, 0x0, 0x0, 0x0, 0x2, 0x1, 0x2, 0x0, 0x0, 0x0, 0x0, // end of 9th line
+  0x0, 0x0, 0x0, 0x0, 0x2, 0x1, 0x2, 0x0, 0x0, 0x0, 0x0, // end of 10th line
+  0x0, 0x0, 0x0, 0x0, 0x2, 0x2, 0x2, 0x0, 0x0, 0x0, 0x0, // end of 11th line
+  0x0, 0x0
+};
+
+const display_pixel_t CURSOR_OUTLINE_COLOR = {.fields = {.r = (uint8_t)DISPLAY_MAX_RED,
+                                                 .g = DISPLAY_MAX_GREEN,
+                                                 .b = DISPLAY_MAX_BLUE}};
+const display_pixel_t CURSOR_COLOR = {
+    .fields = {.r = 0, .g = 0, .b = 0}};
 
 cursor_t cursor_create() {
   cursor_t cursor = {
@@ -55,18 +74,30 @@ void cursor_show(cursor_t *cursor, image_t *image, image_zoom_t zoom,
   uint16_t base_x = screen_coords.x;
   uint16_t base_y = screen_coords.y;
 
-  uint16_t first_x = base_x - CURSOR_SIZE / 2;
-  uint16_t first_y = base_y - CURSOR_SIZE / 2;
+  uint16_t first_x = base_x - CURSOR_WIDTH / 2;
+  uint16_t first_y = base_y - CURSOR_WIDTH / 2;
 
-  for (int i = 0; i < CURSOR_SIZE; i++) {
-    uint16_t x = first_x + i;
-    uint16_t y = first_y + i;
+  for (uint16_t iy = 0; iy < CURSOR_WIDTH; iy++) {
+    for (uint16_t ix = 0; ix < CURSOR_WIDTH; ix++) {
+      uint16_t x = first_x + ix;
+      uint16_t y = first_y + iy;
 
-    cursor->previous_display_data[i] = display_get_pixel(display, base_x, y);
-    cursor->previous_display_data[i + CURSOR_SIZE] = display_get_pixel(display, x, base_y);
+      uint8_t colorn = CURSOR[iy * CURSOR_WIDTH + ix];
+      display_pixel_t color;
+      switch (colorn) {
+      case 0x1:
+        color = CURSOR_COLOR;
+        break;
+      case 0x2:
+        color = CURSOR_OUTLINE_COLOR;
+        break;
+      default:
+        continue;
+      }
 
-    display_set_pixel(display, base_x, y, CURSOR_COLOR);
-    display_set_pixel(display, x, base_y, CURSOR_COLOR);
+      cursor->previous_display_data[iy * CURSOR_WIDTH + ix] = display_get_pixel(display, x, y);
+      display_set_pixel(display, x, y, color);
+    }
   }
 }
 
@@ -80,16 +111,26 @@ void cursor_hide(cursor_t *cursor, image_t *image, image_zoom_t zoom,
       image_get_screen_coords(image, zoom, coords_create(cursor->x, cursor->y));
   uint16_t base_x = screen_coords.x;
   uint16_t base_y = screen_coords.y;
+  uint16_t first_x = base_x - CURSOR_WIDTH / 2;
+  uint16_t first_y = base_y - CURSOR_WIDTH / 2;
 
-  uint16_t first_x = base_x - CURSOR_SIZE / 2;
-  uint16_t first_y = base_y - CURSOR_SIZE / 2;
+  for (int iy = 0; iy < CURSOR_WIDTH; iy++) {
+    for (int ix = 0; ix < CURSOR_WIDTH; ix++) {
+      uint16_t x = first_x + ix;
+      uint16_t y = first_y + iy;
 
-  for (int i = 0; i < CURSOR_SIZE; i++) {
-    uint16_t x = first_x + i;
-    uint16_t y = first_y + i;
+      uint8_t colorn = CURSOR[iy * CURSOR_WIDTH + ix];
+      switch (colorn) {
+      case 0x1:
+      case 0x2:
+        break;
+      default:
+        continue;
+      }
 
-    display_set_pixel(display, base_x, y, cursor->previous_display_data[i]);
-    display_set_pixel(display, x, base_y, cursor->previous_display_data[i + CURSOR_SIZE]);
+      display_set_pixel(display, x, y,
+                        cursor->previous_display_data[iy * CURSOR_WIDTH + ix]);
+    }
   }
 
   cursor->shown = false;
