@@ -20,8 +20,9 @@ SSH_OPTIONS+=-i ~/.ssh/mzapo-root-key
 #SSH_OPTIONS=-i /opt/zynq/ssh-connect/mzapo-root-key
 #SSH_OPTIONS=-o 'ProxyJump=ctu_login@postel.felk.cvut.cz'
 
-IMAGE_VIEWER=./bin/image-viewer
-LIB_PHERIPHERALS=./bin/lib_pheripherals.so
+IMAGE_VIEWER=$(BIN_DIR)/image-viewer
+LIB_PHERIPHERALS=$(BIN_DIR)/lib_pheripherals.so
+TEXT_VIEWER=$(BIN_DIR)/text-viewer
 
 ifdef ($(COMPUTER))
 DEPENDENCIES=./.computer
@@ -33,14 +34,18 @@ all: $(DEPENDENCIES) image-viewer
 
 image-viewer: $(IMAGE_VIEWER)
 lib-pheripherals: $(LIB_PHERIPHERALS)
+text-viewer: $(TEXT_VIEWER)
 
 $(IMAGE_VIEWER): $(DEPENDENCIES) lib-pheripherals
 	@make -C image-viewer
 
+$(TEXT_VIEWER): $(DEPENDENCIES) lib-pheripherals
+	@make -C text-viewer
+
 $(DEPENDENCIES): clean
 	touch $(DEPENDENCIES)
 
-$(LIB_PHERIPHERALS):
+$(LIB_PHERIPHERALS): $(DEPENDENCIES)
 	@make -C lib-pheripherals
 
 copy-executable: all
@@ -49,8 +54,11 @@ copy-executable: all
 	scp -r $(SSH_OPTIONS) $(BIN_DIR) $(TARGET_USER)@$(TARGET_IP):$(TARGET_DIR)/$(NAME)
 	ssh $(SSH_OPTIONS) $(TARGET_USER)@$(TARGET_IP) mv $(TARGET_DIR)/bin/* $(TARGET_DIR)
 
-run-image-viewer: copy-executable all 
+run-image-viewer: copy-executable
 	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/image-viewer $(ARG)
+
+run-text-viewer: copy-executable
+	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/text-viewer $(ARG)
 
 clean:
 	@make -C image-viewer clean
@@ -58,6 +66,4 @@ clean:
 	$(RM) -rf $(BIN_DIR)
 	$(RM) -rf ./.computer ./.arm
 
-FORCE: ;
-
-.PHONY: clean all image-viewer FORCE copy-executable run-image-viewer
+.PHONY: all clean
