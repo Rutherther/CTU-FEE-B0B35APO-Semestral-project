@@ -24,7 +24,7 @@ IMAGE_VIEWER=$(BIN_DIR)/image-viewer
 LIB_PHERIPHERALS=$(BIN_DIR)/lib_pheripherals.so
 TEXT_VIEWER=$(BIN_DIR)/text-viewer
 
-ifdef ($(COMPUTER))
+ifdef COMPUTER
 DEPENDENCIES=./.computer
 else
 DEPENDENCIES=./.arm
@@ -42,7 +42,8 @@ $(IMAGE_VIEWER): $(DEPENDENCIES) lib-pheripherals
 $(TEXT_VIEWER): $(DEPENDENCIES) lib-pheripherals
 	@make -C text-viewer
 
-$(DEPENDENCIES): clean
+$(DEPENDENCIES):
+	@make clean
 	touch $(DEPENDENCIES)
 
 $(LIB_PHERIPHERALS): $(DEPENDENCIES)
