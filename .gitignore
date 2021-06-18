@@ -3,3 +3,7 @@ compile_commands.json
 ignore
 bin/
 obj/
+
+depend
+.computer
+.arm

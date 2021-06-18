@@ -20,12 +20,27 @@ SSH_OPTIONS+=-i ~/.ssh/mzapo-root-key
 #SSH_OPTIONS=-i /opt/zynq/ssh-connect/mzapo-root-key
 #SSH_OPTIONS=-o 'ProxyJump=ctu_login@postel.felk.cvut.cz'
 
-all: image-viewer FORCE
+IMAGE_VIEWER=./bin/image-viewer
+LIB_PHERIPHERALS=./bin/lib_pheripherals.so
 
-image-viewer: FORCE lib-pheripherals
+ifdef ($(COMPUTER))
+DEPENDENCIES=./.computer
+else
+DEPENDENCIES=./.arm
+endif
+
+all: $(DEPENDENCIES) image-viewer
+
+image-viewer: $(IMAGE_VIEWER)
+lib-pheripherals: $(LIB_PHERIPHERALS)
+
+$(IMAGE_VIEWER): $(DEPENDENCIES) lib-pheripherals
 	@make -C image-viewer
 
-lib-pheripherals: FORCE
+$(DEPENDENCIES): clean
+	touch $(DEPENDENCIES)
+
+$(LIB_PHERIPHERALS):
 	@make -C lib-pheripherals
 
 copy-executable: all
@@ -41,6 +56,7 @@ clean:
 	@make -C image-viewer clean
 	@make -C lib-pheripherals clean
 	$(RM) -rf $(BIN_DIR)
+	$(RM) -rf ./.computer ./.arm
 
 FORCE: ;
 
