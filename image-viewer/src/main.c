@@ -24,6 +24,11 @@
 #include "serialize_lock.h"
 #include "mzapo_rgb_led.h"
 
+typedef enum {
+  SUCCESS,
+  TOO_FEW_ARGUMENTS,
+  IMAGE_ERROR
+} error_t;
 
 int main(int argc, char *argv[])
 {
@@ -48,7 +53,7 @@ int main(int argc, char *argv[])
   if (argc < 2) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Not enough arguments.");
     rgb_led_set_red(&led, LED_LEFT);
-    return 1;
+    return TOO_FEW_ARGUMENTS;
   }
 
   logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
@@ -71,7 +76,7 @@ int main(int argc, char *argv[])
   if (viewer.error != IMERR_SUCCESS) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not load image %d", viewer.error);
     rgb_led_set_red(&led, LED_RIGHT);
-    return 1;
+    return IMAGE_ERROR;
   }
 
   logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
@@ -102,5 +107,5 @@ int main(int argc, char *argv[])
               argv[1]);
 
   ledstrip_clear(&ledstrip);
-  return 0;
+  return SUCCESS;
 }
