@@ -66,4 +66,4 @@ clean:
 	$(RM) -rf $(BIN_DIR)
 	$(RM) -rf ./.computer ./.arm
 
-.PHONY: all clean
+.PHONY: all clean run-image-viewer run-text-viewer copy-executable
