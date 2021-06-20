@@ -96,7 +96,7 @@ void gui_text_view_render(container_t *container, component_t *component,
     x_offset = 0;
   }
 
-  if (y_offset > 0) {
+  if (y_offset >= 0) {
     y_offset = 0;
   } else if (y_offset < -(font->size + font->line_spacing) * (text->lines_count) + gui->size.y - container->y) {
     y_offset = -(font->size + font->line_spacing) * (text->lines_count) + gui->size.y - container->y;
