@@ -200,7 +200,6 @@ void zoom(image_viewer_t *viewer, int amount) {
   cursor_show(&viewer->cursor, &viewer->image, viewer->scale, viewer->display);
 }
 
-// TODO: implement zoom functions
 void command_handler_zoom_in(void *data, int amount) {
   // hide cursor, zoom, show cursor
   image_viewer_t *viewer = (image_viewer_t *)data;
