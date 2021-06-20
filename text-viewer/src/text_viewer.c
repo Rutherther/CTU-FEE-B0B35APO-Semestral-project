@@ -138,8 +138,9 @@ static component_t *text_viewer_gui_add_text_view(text_viewer_t *text_viewer, co
 static void command_handler_move(void *state, direction_t direction, int amount) {
   component_t *text_view = (component_t*)state;
   if (text_view->focused) {
-    int32_t x, y;
-    direction_move_xy(direction, (int32_t*)&x, (int32_t*)&y, amount);
+    int32_t x = 0;
+    int32_t y = 0;
+    direction_move_xy(direction, &x, &y, amount);
     gui_text_view_scroll(text_view, x, y);
   }
 }

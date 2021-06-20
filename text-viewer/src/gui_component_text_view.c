@@ -66,7 +66,7 @@ multiline_text_t *gui_multiline_text_create(font_t *font, display_pixel_t color,
   return multiline_text;
 }
 
-void gui_text_view_scroll(component_t *text_view, int16_t x, int16_t y) {
+void gui_text_view_scroll(component_t *text_view, int32_t x, int32_t y) {
   text_view->x -= x;
   text_view->y -= y;
 }

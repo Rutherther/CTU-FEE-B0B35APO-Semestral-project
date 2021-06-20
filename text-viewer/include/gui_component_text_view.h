@@ -21,7 +21,7 @@ multiline_text_t *gui_multiline_text_create(font_t *font, display_pixel_t color,
 
 component_t gui_text_view_create(gui_t *gui, multiline_text_t *text, int16_t x, int16_t y);
 
-void gui_text_view_scroll(component_t *text_view, int16_t x, int16_t y);
+void gui_text_view_scroll(component_t *text_view, int32_t x, int32_t y);
 void gui_text_view_reset_scroll(component_t *text_view);
 void gui_text_view_full_scroll(component_t *text_view);
 
