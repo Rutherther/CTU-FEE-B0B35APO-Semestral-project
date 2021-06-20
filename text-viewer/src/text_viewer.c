@@ -94,6 +94,7 @@ file_error_t text_viewer_load_file(text_viewer_t *text_viewer) {
 
   text_viewer->multiline_text = text;
 
+  ledstrip_clear(text_viewer->pheripherals.ledstrip);
   return FILER_SUCCESS;
 }
 
@@ -263,7 +264,16 @@ void text_viewer_start_loop(text_viewer_t *text_viewer) {
 
     gui_update(&text_viewer->gui);
     gui_render(&text_viewer->gui);
+
+    ledstrip_turn_on(text_viewer->pheripherals.ledstrip,
+                     ((double)gui_text_view_get_lines_scrolled(text_view) /
+                     text_viewer->multiline_text->lines_count) * LED_STRIP_COUNT,
+                     1);
   }
+
+  ledstrip_clear(text_viewer->pheripherals.ledstrip);
+  rgb_led_clear(text_viewer->pheripherals.rgb_leds, LED_LEFT);
+  rgb_led_clear(text_viewer->pheripherals.rgb_leds, LED_RIGHT);
 
   renderer_clear(&renderer);
   renderer_render(&renderer);
