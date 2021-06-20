@@ -11,7 +11,10 @@
 #include "text_viewer.h"
 
 typedef enum {
-  SUCCESS,
+  ERROR_SUCCESS,
+  ERROR_NOT_ENOUGH_ARGUMENTS,
+  ERROR_CANT_OPEN_FILE,
+  ERROR_PHERIPHERALS,
 } error_t;
 
 int main(int argc, char *argv[]) {
@@ -40,6 +43,7 @@ int main(int argc, char *argv[]) {
   if (argc < 2) {
     logger_info(&logger, __FILE__, __FUNCTION__, __LINE__, "Not enough arguments");
     rgb_led_set_red(&rgb_leds, LED_LEFT);
+    return ERROR_NOT_ENOUGH_ARGUMENTS;
   }
 
   display_t display = mzapo_create_display();
@@ -49,6 +53,7 @@ int main(int argc, char *argv[]) {
   if (!mzapo_check_pheripherals(&ledstrip, &rgb_leds, &display, &knobs)) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not initialize some of the pheripherals.");
     rgb_led_set_red(&rgb_leds, LED_LEFT);
+    return ERROR_PHERIPHERALS;
   }
 
   mzapo_pheripherals_t pheripherals = mzapo_pheripherals_create(&ledstrip, &rgb_leds, &display, &knobs);
@@ -63,8 +68,8 @@ int main(int argc, char *argv[]) {
   file_error_t error = text_viewer_load_file(&text_viewer);
   if (error != FILER_SUCCESS) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not load file.");
-    return 1;
     rgb_led_set_red(&rgb_leds, LED_RIGHT);
+    return ERROR_CANT_OPEN_FILE;
   }
 
   file_set_nonblocking(STDIN_FILENO, &oldstdin);
@@ -84,5 +89,5 @@ int main(int argc, char *argv[]) {
   logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
               "Application quit");
 
-  return SUCCESS;
+  return ERROR_SUCCESS;
 }
