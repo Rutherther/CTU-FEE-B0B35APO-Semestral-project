@@ -109,12 +109,14 @@ static container_t *text_viewer_gui_add_name_and_line(text_viewer_t *text_viewer
   component_t line = gui_line_create(&WHITE_PIXEL, 0, name.height + name.y,
                                      text_viewer->gui.size.x, 1);
 
-  gui_group_container_add_component(&name_and_line, name);
-  gui_group_container_add_component(&name_and_line, line);
-
   name_and_line.width = text_viewer->gui.size.x;
   name_and_line.height = name.height + line.height + 3;
-  return gui_window_add_container(window, name_and_line);
+  container_t *name_and_line_ptr = gui_window_add_container(window, name_and_line);
+
+  gui_group_container_add_component(name_and_line_ptr, name);
+  gui_group_container_add_component(name_and_line_ptr, line);
+
+  return name_and_line_ptr;
 }
 
 static container_t *text_viewer_gui_add_view_container(text_viewer_t *text_viewer, container_t *name_and_line, window_t *window) {
@@ -199,10 +201,9 @@ void gui_text_view_register_commands(gui_t *gui, component_t *text_view) {
                     ROTATION_ENCODER_VERTICAL, command_handler_move_down,
                     text_view);
 
-  commands_register(gui->commands, IN_ENCODER_CLICK,
-                    ROTATION_ENCODER_ZOOM, command_handler_reset,
-                    text_view);
   commands_register(gui->commands, IN_ENCODER_CLICK, ROTATION_ENCODER_VERTICAL,
+                    command_handler_reset, text_view);
+  commands_register(gui->commands, IN_ENCODER_CLICK, ROTATION_ENCODER_ZOOM,
                     command_handler_full_scroll, text_view);
 }
 
