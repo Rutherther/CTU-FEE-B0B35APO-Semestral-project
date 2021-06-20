@@ -30,23 +30,23 @@ else
 DEPENDENCIES=./.arm
 endif
 
-all: $(DEPENDENCIES) image-viewer
+all: $(DEPENDENCIES) image-viewer text-viewer
 
 image-viewer: $(IMAGE_VIEWER)
 lib-pheripherals: $(LIB_PHERIPHERALS)
 text-viewer: $(TEXT_VIEWER)
 
-$(IMAGE_VIEWER): $(DEPENDENCIES) lib-pheripherals
+$(IMAGE_VIEWER): $(DEPENDENCIES) lib-pheripherals FORCE
 	@make -C image-viewer
 
-$(TEXT_VIEWER): $(DEPENDENCIES) lib-pheripherals
+$(TEXT_VIEWER): $(DEPENDENCIES) lib-pheripherals FORCE
 	@make -C text-viewer
 
 $(DEPENDENCIES):
 	@make clean
 	touch $(DEPENDENCIES)
 
-$(LIB_PHERIPHERALS): $(DEPENDENCIES)
+$(LIB_PHERIPHERALS): $(DEPENDENCIES) FORCE
 	@make -C lib-pheripherals
 
 copy-executable: all
@@ -64,7 +64,10 @@ run-text-viewer: copy-executable
 clean:
 	@make -C image-viewer clean
 	@make -C lib-pheripherals clean
+	@make -C text-viewer clean
 	$(RM) -rf $(BIN_DIR)
 	$(RM) -rf ./.computer ./.arm
 
-.PHONY: all clean run-image-viewer run-text-viewer copy-executable
+FORCE:
+
+.PHONY: all clean run-image-viewer run-text-viewer copy-executable FORCE
