@@ -1,5 +1,6 @@
 #include "font.h"
 #include "mzapo_led_strip.h"
+#include "mzapo_rgb_led.h"
 #include "nonblocking_io.h"
 #include "serialize_lock.h"
 #include <stdio.h>
@@ -32,17 +33,22 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  mzapo_rgb_led_t rgb_leds = mzapo_create_rgb_led();
+  rgb_led_clear(&rgb_leds, LED_LEFT);
+  rgb_led_clear(&rgb_leds, LED_RIGHT);
+
   if (argc < 2) {
     logger_info(&logger, __FILE__, __FUNCTION__, __LINE__, "Not enough arguments");
+    rgb_led_set_red(&rgb_leds, LED_LEFT);
   }
 
   display_t display = mzapo_create_display();
-  mzapo_rgb_led_t rgb_leds = mzapo_create_rgb_led();
   mzapo_ledstrip_t ledstrip = mzapo_create_ledstrip();
   void* knobs = mzapo_get_knobs_address();
 
   if (!mzapo_check_pheripherals(&ledstrip, &rgb_leds, &display, &knobs)) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not initialize some of the pheripherals.");
+    rgb_led_set_red(&rgb_leds, LED_LEFT);
   }
 
   mzapo_pheripherals_t pheripherals = mzapo_pheripherals_create(&ledstrip, &rgb_leds, &display, &knobs);
@@ -58,6 +64,7 @@ int main(int argc, char *argv[]) {
   if (error != FILER_SUCCESS) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not load file.");
     return 1;
+    rgb_led_set_red(&rgb_leds, LED_RIGHT);
   }
 
   file_set_nonblocking(STDIN_FILENO, &oldstdin);

@@ -81,6 +81,11 @@ void gui_text_view_full_scroll(component_t *text_view) {
   text_view->y = INT16_MIN; 
 }
 
+uint16_t gui_text_view_get_lines_scrolled(component_t *component) {
+  multiline_text_t *text = (multiline_text_t *)component->state;
+  return (-component->y) / (text->font->size + text->font->line_spacing);
+}
+
 void gui_text_view_render(container_t *container, component_t *component,
                           gui_t *gui) {
   multiline_text_t *text = (multiline_text_t*)component->state;
