@@ -138,7 +138,9 @@ static component_t *text_viewer_gui_add_text_view(text_viewer_t *text_viewer, co
 static void command_handler_move(void *state, direction_t direction, int amount) {
   component_t *text_view = (component_t*)state;
   if (text_view->focused) {
-    direction_move_xy(direction, (int32_t*)&text_view->x, (int32_t*)&text_view->y, -amount);
+    int32_t x, y;
+    direction_move_xy(direction, (int32_t*)&x, (int32_t*)&y, amount);
+    gui_text_view_scroll(text_view, x, y);
   }
 }
 
@@ -156,8 +158,13 @@ static void command_handler_move_left(void *state, int amount) {
 static void command_handler_move_right(void *state, int amount) {
   command_handler_move(state, RIGHT, amount);
 }
+
 static void command_handler_reset(void *state, int amount) {
   gui_text_view_reset_scroll((component_t*)state);
+}
+
+static void command_handler_full_scroll(void *state, int amount) {
+  gui_text_view_full_scroll((component_t *)state);
 }
 
 component_t gui_text_view_create(gui_t *gui, multiline_text_t *text, int16_t x, int16_t y) {
@@ -180,6 +187,8 @@ void gui_text_view_register_commands(gui_t *gui, component_t *text_view) {
                     command_handler_move_up, text_view);
   commands_register(gui->commands, IN_KEYBOARD, 'r',
                     command_handler_reset, text_view);
+  commands_register(gui->commands, IN_KEYBOARD, 't',
+                    command_handler_full_scroll, text_view);
 
   commands_register(gui->commands, IN_ENCODER_ROTATE,
                     ROTATION_ENCODER_HORIZONTAL, command_handler_move_right,
@@ -192,6 +201,8 @@ void gui_text_view_register_commands(gui_t *gui, component_t *text_view) {
   commands_register(gui->commands, IN_ENCODER_CLICK,
                     ROTATION_ENCODER_ZOOM, command_handler_reset,
                     text_view);
+  commands_register(gui->commands, IN_ENCODER_CLICK, ROTATION_ENCODER_VERTICAL,
+                    command_handler_full_scroll, text_view);
 }
 
 void text_viewer_start_loop(text_viewer_t *text_viewer) {
