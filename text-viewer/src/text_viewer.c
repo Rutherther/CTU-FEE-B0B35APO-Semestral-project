@@ -70,8 +70,16 @@ file_error_t text_viewer_load_file(text_viewer_t *text_viewer) {
   const int iters = 100/perc;
   for (int i = 0; i < iters; i++) {
     long to_read = fsize/iters;
+    if (to_read == 0) {
+      i = iters - 1;
+    }
+
     if (i == iters - 1) {
       to_read = fsize - read - 1;
+    }
+
+    if (to_read == 0 || fsize == read) {
+      break;
     }
 
     long result = fread(data+read, sizeof(char), to_read, file);
