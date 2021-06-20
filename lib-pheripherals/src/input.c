@@ -149,7 +149,7 @@ int16_t commands_check_input(commands_t * commands) {
 
   commands_update_rotation_encoders(&commands->encoders);
   rotation_encoders_t encoders = commands->encoders;
-  for (int i = 0; i < commands->size; i++) {
+  for (int i = 0; i < commands->count; i++) {
     command_t command = commands->commands[i];
     input_t input = command.input;
     if (input.type != IN_ENCODER_ROTATE && input.type != IN_ENCODER_CLICK) {
