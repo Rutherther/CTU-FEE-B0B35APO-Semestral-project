@@ -3,6 +3,8 @@
 #include "gui.h"
 #include "gui_component_line.h"
 #include "input.h"
+#include "mzapo_led_strip.h"
+#include "mzapo_rgb_led.h"
 #include "renderer.h"
 #include <errno.h>
 #include <stdio.h>
@@ -63,10 +65,24 @@ file_error_t text_viewer_load_file(text_viewer_t *text_viewer) {
     return FILER_UNKNOWN;
   }
 
-  long result = fread(data, sizeof(char), fsize, file);
-  if (result != fsize) {
-    fclose(file);
-    return FILER_CANNOT_READ;
+  long read = 0;
+  const int perc = 5;
+  const int iters = 100/perc;
+  for (int i = 0; i < iters; i++) {
+    long to_read = fsize/iters;
+    if (i == iters - 1) {
+      to_read = fsize - read - 1;
+    }
+
+    long result = fread(data+read, sizeof(char), to_read, file);
+    read += result;
+
+    if (result != to_read) {
+      fclose(file);
+      return FILER_CANNOT_READ;
+    }
+
+    ledstrip_progress_bar_step(text_viewer->pheripherals.ledstrip, i*perc);
   }
 
   fclose(file);
