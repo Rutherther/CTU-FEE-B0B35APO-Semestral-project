@@ -2,6 +2,7 @@
 #include "display_utils.h"
 #include "input.h"
 #include "renderer.h"
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include "direction.h"
@@ -75,11 +76,16 @@ void gui_text_view_reset_scroll(component_t *text_view) {
   text_view->y = 0;
 }
 
+void gui_text_view_full_scroll(component_t *text_view) {
+  text_view->x = 0;
+  text_view->y = INT16_MIN; 
+}
+
 void gui_text_view_render(container_t *container, component_t *component,
                           gui_t *gui) {
   multiline_text_t *text = (multiline_text_t*)component->state;
   font_t *font = text->font;
-  int16_t x_offset = component->x, y_offset = component->y;
+  int32_t x_offset = component->x, y_offset = component->y;
 
   if (x_offset > 0) {
     x_offset = 0;
