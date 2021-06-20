@@ -1,6 +1,6 @@
 export ROOT_DIR = $(shell pwd)
 export BIN_DIR = $(ROOT_DIR)/bin
-export INHERIT_INCLUDES = -I$(ROOT_DIR)/lib-pheripherals/include
+export INHERIT_INCLUDES = -I$(ROOT_DIR)/lib-pheripherals/include -I$(ROOT_DIR)/lib-gui/include
 export LIB_DIR = -L$(ROOT_DIR)/bin
 
 #TARGET_IP ?= 192.168.202.127
@@ -21,7 +21,8 @@ SSH_OPTIONS+=-i ~/.ssh/mzapo-root-key
 #SSH_OPTIONS=-o 'ProxyJump=ctu_login@postel.felk.cvut.cz'
 
 IMAGE_VIEWER=$(BIN_DIR)/image-viewer
-LIB_PHERIPHERALS=$(BIN_DIR)/lib_pheripherals.so
+LIB_PHERIPHERALS=$(BIN_DIR)/libmzapo-pheripherals.so
+LIB_GUI=$(BIN_DIR)/libmzapo-gui.so
 TEXT_VIEWER=$(BIN_DIR)/text-viewer
 
 ifdef COMPUTER
@@ -34,12 +35,13 @@ all: $(DEPENDENCIES) image-viewer text-viewer
 
 image-viewer: $(IMAGE_VIEWER)
 lib-pheripherals: $(LIB_PHERIPHERALS)
+lib-gui: $(LIB_GUI)
 text-viewer: $(TEXT_VIEWER)
 
 $(IMAGE_VIEWER): $(DEPENDENCIES) lib-pheripherals FORCE
 	@make -C image-viewer
 
-$(TEXT_VIEWER): $(DEPENDENCIES) lib-pheripherals FORCE
+$(TEXT_VIEWER): $(DEPENDENCIES) lib-pheripherals lib-gui FORCE
 	@make -C text-viewer
 
 $(DEPENDENCIES):
@@ -48,6 +50,9 @@ $(DEPENDENCIES):
 
 $(LIB_PHERIPHERALS): $(DEPENDENCIES) FORCE
 	@make -C lib-pheripherals
+
+$(LIB_GUI): $(DEPENDENCIES) FORCE
+	@make -C lib-gui
 
 copy-executable: all
 	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) killall gdbserver 1>/dev/null 2>/dev/null || true
@@ -65,6 +70,7 @@ clean:
 	@make -C image-viewer clean
 	@make -C lib-pheripherals clean
 	@make -C text-viewer clean
+	@make -C lib-gui clean
 	$(RM) -rf $(BIN_DIR)
 	$(RM) -rf ./.computer ./.arm
 

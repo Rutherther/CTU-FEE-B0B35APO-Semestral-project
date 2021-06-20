@@ -21,7 +21,7 @@ else
 LDFLAGS = -lrt -lpthread -l :libmagic.so.1 -l :libjpeg.so.62 -l :libz.so -l :libpng16.so.16
 endif
 
-NAME=mzapo-pheripherals
+NAME=mzapo-gui
 BINARY=$(BIN_DIR)/lib$(NAME).so
 
 SRC=$(wildcard $(SRC_DIR)/*.c)
