@@ -1,11 +1,77 @@
+#+TITLE: APO - Semestrální práce
+#+SUBTITLE: Průzkumník souborů, prohlížeč obrázků, textových souborů
+#+AUTHOR: František Boháček
+
+* Zadání
+Semestrální práce bude rozdělena do 3 jednotlivých programů vypracovaných pro MZAPO. Hlavní z nich
+bude průzkumník souborů, ve kterém bude možné procházet celý kořenový souborový systém a také externí zařízení.
+Průzkumník bude umět základní operace jako kopírování, přesouvání a mazání souborů. Dále spouštět spustitelné soubory
+a pro obrázky, resp. pro textové soubory otevřít prohlížeč obrázků, resp. textových souborů.
+
+Prohlížeč obrázků je druhý program, který bude umět otevřít formáty jpeg, png a ppm. Přes rotační enkodery
+bude zařízen pohyb kurzoru po obrázku a následně se půjde na jednotlivé části obrázku přibližovat,
+aby obrázek nebyl moc malý.
+
+Prohlížeč textových souborů je poslední program, ten bude umět otevírat kterékoliv soubory, ale korektně
+bude zobrazovat jen ty textové. Půjde se v něm pohybovat za pomoci rotačních enkoderů.
+
+Vstup bude zařízen standardním vstupem pro ovládání na dálku a rotačními enkodery pro ovládání přímo.
+Standardní výstup bude použit k logování hlášek o tom, co program právě dělá nebo v jakém chybovém stavu se nachází.
+
+Pro rychlejší ladění bude možnost programy spouštět na osobním počítači, kde se jako displej využije SDL okno.
+
+* Manuál
 ** Průzkumník souborů
-** Prohlížeč obrázků
-*** Argumenty
-Program nelze bez argumentů spustit, je vždy potřeba spustit s cestou k souboru s obrázkem.
+** Prohlížeč textových souborů
+*** Funkce
+Program zobrazí na LCD displeji text z textového souboru, lze se po něm pohybovat rotačními enkodery.
+Pokud program nedostane textový soubor, je možné, že ho nezobrazí korektně.
+
+*** Spouštění
+Program nelze bez argumentů spustit, je vždy potřeba spustit s cestou k souboru s textem.
+Jinak program skončí s chybovým stavem vyobrazeným na RGB LEDkách.
 
 Použití:
 #+begin_src
-./image-viewer [path-to-image]
+./text-viewer [cesta-k-souboru]
+#+end_src
+
+*** LED pásek
+Na LED pásku se ve fázi načítání ukazuje kolik dat je již načtených.
+Po načtení se zobrazuje vertikální pozice v souboru podle toho, jak moc je soubor posunutý.
+
+*** Chybové stavy
+Pokud se program nespustí správně, jedna z RGB LEDek se rozsvítí červeně.
+
+Levá RGB LED znamená, že nebyl předán žádný argument. Pravá RGB LED znamená, že soubor se nepodařilo načíst,
+neexistuje nebo k němu nejsou přístupová práva. Konkrétní chybová hláška se objeví na standardním výstupu.
+
+*** Ovládání
+
+**** Standardní vstup
+- h, j, k, l - pohyb pohledu po souboru (doleva, dolů, nahoru, doprava)
+- r - vrácení pohledu na začátek souboru
+- t - pohled na konec souboru
+- e - ukončení programu
+
+**** Rotační enkodery
+- První (červený) - horizontální posun pohledu
+- Druhý (zelený) - vertikální posun pohledu
+- Tlačítko prvního enkoderu - ukončení programu
+- Tlačítko druhého enkoderu - vrácení pohledu na začátek souboru
+- Tlačítko třetího enkoderu - pohled na konec souboru
+** Prohlížeč obrázků
+*** Funkce
+Program zobrazí na LCD displeji přeškálovaný obrázek, který se dá přibližovat pomocí rotačních enkoderů nebo standardního vstupu.
+Při spuštění programu je obrázek oddálený tak, aby se vešel celý na obrazovku.
+
+*** Spouštění
+Program nelze bez argumentů spustit, je vždy potřeba spustit s cestou k souboru s obrázkem.
+Jinak program skončí s chybovým stavem vyobrazeným na RGB LEDkách.
+
+Použití:
+#+begin_src
+./image-viewer [cesta-k-souboru]
 #+end_src
 
 *** Podporované formáty
@@ -13,23 +79,80 @@ Použití:
 - png
 - ppm
 
-Formáty se rozlišují podle jejich hlaviček, koncovky se neberou vpotaz
+Formáty se rozlišují podle jejich hlaviček, koncovky se nerozlišují
 
-*** Funkce
-Program zobrazí na LCD displeji přeškálovaný obrázek, který se dá přibližovat pomocí rotačních enkoderů nebo standardního vstupu.
+*** LED pásek
+Na LED pásku se ve fázi načítání ukazuje kolik dat je již načtených.
+Po načtení se zobrazuje horizontální pozice kurzoru na obrázku
+pro snazší orientaci při větším zvětšení.
+
+*** Chybové stavy
+Pokud se program nespustí správně, jedna z RGB LEDek se rozsvítí červeně.
+
+Levá RGB LED znamená, že nebyl předán žádný argument. Pravá RGB LED znamená, že soubor se nepodařilo načíst,
+neexistuje, není správný formát nebo k němu nejsou přístupová práva. Konkrétní chybová hláška se objeví na standardním výstupu.
 
 *** Ovládání
 Program má kurzor, podle kterého se určuje, kam se přibližuje. Kurzor se zobrazí, když se s ním hýbe a chvilku potom. 
 
 **** Standardní vstup
-- h, j, k, l - ovládání kurzoru (doleva, dolů, nahoru, doprava)
+- h, j, k, l - ovládání kurzoru nebo posunu po celém obrázku v závislosti na módu, viz klávesa m (doleva, dolů, nahoru, doprava)
 - z, x - přiblížení a oddálení obrázku (do místa, kde je kurzor)
 - r - vrácení do původního stavu (oddálí obrázek a nastaví kurzor doprostřed obrázku)
+- m - přepnutí mezi módy pohybu po obrázku nebo pohybu kurzorem
 - e - ukončení programu
 
 **** Rotační enkodery
-- První (červený) - posun kurzoru vertikálně
-- Druhý (zelený) - posun kurzoru horizontálně
+- První (červený) - posun kurzoru horizontálně nebo posun horizontálně celého obrázku (viz tlačítko druhého enkoderu)
+- Druhý (zelený) - posun kurzoru vertikálně nebo posun vertikálně celého obrázku (viz tlačítko druhého enkoderu)
 - Třetí (modrý) - přiblížení a oddálení
-- Tlačítko třetího enkoderu - vrácení do původního stavu
 - Tlačítko prvního enkoderu - ukončení programu
+- Tlačítko druhého enkoderu - přepnutí mezi módy pohybu po obrázku nebo pohybu kurzorem
+- Tlačítko třetího enkoderu - vrácení do původního stavu přiblížení
+
+* Kompilace, instalace, spouštění
+Na kompilaci je použit Makefile.
+
+** Křížová kompilace
+Pro křížovou kompilaci je zapotřebí arm-gnueabihf-gcc a dynamické knihovny
+libjpeg verze 62, libpng verze 16 a libmagic verze 1 pro MZAPO.
+
+Soubory se po kompilacia uloží do složky bin, pro spuštění je potřeba
+je překopírovat na MZAPO.
+
+Překopírování jde realizovat pomocí ssh, lze použít make, konkrétně
+#+begin_src
+TARGET_IP=[ip-addr] make copy-executable
+#+end_src
+kde za ip-addr je potřeba dosadit ip adresu MZAPO.
+
+Pro spuštění lze využít sériového portu nebo ssh. Případně pomocí make,
+na spuštění průzkumníku souborů:
+#+begin_src
+TARGET_IP=[ip-addr] make run
+#+end_src
+případně pro spuštění prohlížeče obrázků run-image-viewer
+a pro spuštění prohlížeče textových souborů run-text-viewer.
+Pro předání argumentu slouží environment proměnná ARG
+
+Například lze použít
+#+begin_src
+TARGET_IP=[ip-addr] ARG=/path/to/image make run-image-viewer
+#+end_src
+nebo
+#+begin_src
+TARGET_IP=[ip-addr] ARG=/path/to/image make run-text-viewer
+#+end_src
+** Kompilace na osobní počítač
+Pro lepší ladění je možnost program zkompilovat
+pro osobní počítač, kde je displej simulován
+pomocí SDL okna.
+
+Pro kompilaci pro počítač lze využít environment proměnné COMPUTER.
+Lze pak využít
+#+begin_src
+COMPUTER=1 make
+#+end_src
+
+Po kompilaci jsou soubory ve složce bin v kořenu projektu.
+Lze je spustit napřímo s potřebnými parametry viz Manuál.
