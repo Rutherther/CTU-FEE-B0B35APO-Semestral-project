@@ -21,6 +21,14 @@
 extern "C" {
 #endif
 
+/**
+ * @brief Map physical address to virtual space to use pheripherals
+ * 
+ * @param region_base start of the region to map
+ * @param region_size Size of the whole region
+ * @param opt_cached if false, synchronize data
+ * @return void* 
+ */
 void *map_phys_address(off_t region_base, size_t region_size, int opt_cached);
 
 #ifdef __cplusplus

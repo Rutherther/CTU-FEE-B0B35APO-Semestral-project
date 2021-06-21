@@ -34,11 +34,37 @@ typedef struct {
   image_error_t error;
 } image_viewer_t;
 
+/**
+ * @brief Create image viewer
+ * 
+ * @param filename file with image
+ * @param display display to show image on
+ * @param logger logger to log to
+ * @param ledstrip ledstrip to show loading progress and position in image
+ * @return image_viewer_t 
+ */
 image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t *logger, mzapo_ledstrip_t ledstrip);
+
+/**
+ * @brief Clean up image viewer data
+ * 
+ * @param viewer 
+ */
 void image_viewer_destroy(image_viewer_t *viewer);
 
+/**
+ * @brief Start render loop with handling input
+ * 
+ * @param viewer 
+ * @param reg_knobs_base base address of reg knobs 
+ */
 void image_viewer_start_loop(image_viewer_t *viewer, void *reg_knobs_base);
 
+/**
+ * @brief Display image on display
+ * 
+ * @param viewer 
+ */
 void image_viewer_display_image(image_viewer_t *viewer);
 
 #endif // __IMAGE_VIEWER_H__

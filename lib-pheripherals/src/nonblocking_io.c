@@ -54,32 +54,3 @@ int file_read_nonblocking(int file, size_t max_size, uint8_t *data)
 
   return read_bytes;
 }
-
-/*bool file_write_nonblocking(int file, size_t size, uint8_t *data, int max_delay) {
-  int written = 0;
-  bool correct = true;
-
-  TimeMeasure measure = tmeasure_start();
-
-  while (written < size && !tmeasure_exceededmilli(&measure, max_delay)) {
-    int status = write(file, data + written, size - written);
-
-    if (status == -1) {
-      int error = errno;
-
-      if (error != EAGAIN) {
-        errno = error;
-        correct = false;
-        break;
-      }
-    } else {
-      written += status;
-    }
-  }
-
-  if (correct && written < size) {
-    errno = ETIMEDOUT;
-  }
-
-  return correct;
-  }*/
