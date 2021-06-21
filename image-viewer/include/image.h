@@ -1,16 +1,16 @@
 #ifndef __IMAGE_H__
 #define __IMAGE_H__
 
-#include <magic.h>
-#include <stdio.h>
 #include <jpeglib.h>
+#include <magic.h>
 #include <png.h>
+#include <stdio.h>
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "display_utils.h"
 #include "direction.h"
+#include "display_utils.h"
 
 typedef enum {
   IMG_UNKNOWN,
@@ -55,33 +55,33 @@ typedef struct {
 
 /**
  * @brief Create image with given path
- * 
+ *
  * @param path path to image file
- * @return image_t 
+ * @return image_t
  */
 image_t image_create(char *path);
 
 /**
  * @brief Clean up image data
- * 
- * @param image 
+ *
+ * @param image
  */
 void image_destroy(image_t *image);
 
 /**
  * @brief Get image pixel on coords
- * 
- * @param image 
+ *
+ * @param image
  * @param x x coordinate of pixel
  * @param y y coordinate of pixel
- * @return display_pixel_t 
+ * @return display_pixel_t
  */
 display_pixel_t image_get_pixel(image_t *image, uint16_t x, uint16_t y);
 
 /**
  * @brief Set image pixel on coords
- * 
- * @param image 
+ *
+ * @param image
  * @param x x coords of pixel
  * @param y y coords of pixel
  * @param pixel pixel to set
@@ -91,42 +91,43 @@ void image_set_pixel(image_t *image, uint16_t x, uint16_t y,
 
 /**
  * @brief Create image region
- * 
+ *
  * @param x begin x coord
  * @param y begin y coord
  * @param width width of the region
  * @param height height of the region
- * @return image_region_t 
+ * @return image_region_t
  */
-image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+image_region_t image_region_create(uint16_t x, uint16_t y, uint16_t width,
+                                   uint16_t height);
 bool image_region_move_within(image_region_t *to_move, direction_t direction,
                               int amount, image_region_t *border);
 
 /**
  * @brief Write image data to display data
- * 
- * @param image 
- * @param display 
- * @param scale 
- * @return image_zoom_t 
+ *
+ * @param image
+ * @param display
+ * @param scale
+ * @return image_zoom_t
  */
 image_zoom_t image_write_to_display(image_t *image, display_t *display,
-                              image_zoom_t scale);
+                                    image_zoom_t scale);
 
 /**
  * @brief Get initial zoom to show whole image on the display
- * 
- * @param image 
- * @return image_zoom_t 
+ *
+ * @param image
+ * @return image_zoom_t
  */
 image_zoom_t image_get_initial_zoom(image_t *image);
 
 /**
  * @brief Get shown region from image and zoom
- * 
- * @param image 
- * @param zoom 
- * @return image_region_t 
+ *
+ * @param image
+ * @param zoom
+ * @return image_region_t
  */
 image_region_t image_get_zoom_region(image_t *image, image_zoom_t zoom);
 

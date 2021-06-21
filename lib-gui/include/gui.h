@@ -93,206 +93,210 @@ struct gui_t {
 
 /**
  * @brief Create gui state
- * 
- * @param logger 
- * @param commands 
- * @param renderer 
- * @param pheripherals 
- * @return gui_t 
+ *
+ * @param logger
+ * @param commands
+ * @param renderer
+ * @param pheripherals
+ * @return gui_t
  */
-gui_t gui_create(logger_t *logger, commands_t *commands,
-                 renderer_t *renderer, mzapo_pheripherals_t *pheripherals);
+gui_t gui_create(logger_t *logger, commands_t *commands, renderer_t *renderer,
+                 mzapo_pheripherals_t *pheripherals);
 
 /**
  * @brief Render all elements in gui
- * 
- * @param gui 
+ *
+ * @param gui
  */
 void gui_render(gui_t *gui);
 
 /**
  * @brief Update all elements in gui
- * 
- * @param gui 
+ *
+ * @param gui
  */
 void gui_update(gui_t *gui);
 
 /**
  * @brief Set gui active window
- * 
- * @param gui 
- * @param window 
+ *
+ * @param gui
+ * @param window
  */
 void gui_set_active_window(gui_t *gui, window_t *window);
 
 // gui_window.c
 /**
  * @brief Create new gui window
- * 
+ *
  * @param containers array of containers of static size
  * @param size maximal number of the containers
- * @return window_t 
+ * @return window_t
  */
 window_t gui_window_create(container_t *containers, uint16_t size);
 
 /**
  * @brief Add container to window
- * 
- * @param window 
- * @param container 
- * @return container_t* 
+ *
+ * @param window
+ * @param container
+ * @return container_t*
  */
 container_t *gui_window_add_container(window_t *window, container_t container);
 
 // gui_container.c
 /**
  * @brief Render all elements inside container
- * 
- * @param gui 
- * @param container 
+ *
+ * @param gui
+ * @param container
  */
 void gui_container_render(gui_t *gui, container_t *container);
 
 /**
  * @brief Update all elements inside container
- * 
- * @param gui 
- * @param container 
+ *
+ * @param gui
+ * @param container
  */
 void gui_container_update(gui_t *gui, container_t *container);
 
 // gui_component.c
 /**
  * @brief Create gui component
- * 
+ *
  * @param x begin x coord
  * @param y begin y coord
  * @param w width
  * @param h height
- * @param render 
- * @param update 
- * @return component_t 
+ * @param render
+ * @param update
+ * @return component_t
  */
-component_t gui_component_create(int16_t x, int16_t y, uint16_t w, uint16_t h, render_function render, update_function update);
+component_t gui_component_create(int16_t x, int16_t y, uint16_t w, uint16_t h,
+                                 render_function render,
+                                 update_function update);
 
 /**
  * @brief Check whether component is within screen so it may be rendered
- * 
- * @param gui 
- * @param container 
- * @param component 
- * @return true 
- * @return false 
+ *
+ * @param gui
+ * @param container
+ * @param component
+ * @return true
+ * @return false
  */
 bool gui_is_component_visible(gui_t *gui, container_t *container,
                               component_t *component);
 
 /**
  * @brief Render gui component
- * 
- * @param gui 
- * @param container 
- * @param component 
+ *
+ * @param gui
+ * @param container
+ * @param component
  */
 void gui_component_render(gui_t *gui, container_t *container,
                           component_t *component);
 
 /**
- * @brief Update gui component 
- * 
- * @param gui 
- * @param container 
- * @param component 
+ * @brief Update gui component
+ *
+ * @param gui
+ * @param container
+ * @param component
  */
 void gui_component_update(gui_t *gui, container_t *container,
                           component_t *component);
 
 /**
  * @brief Get absolute position of component
- * 
- * @param container 
- * @param component 
- * @return coords_t 
+ *
+ * @param container
+ * @param component
+ * @return coords_t
  */
 coords_t gui_component_get_absolute_position(container_t *container,
                                              component_t *component);
 
 /**
  * @brief Get position on screen
- * 
- * @param container 
- * @param component 
- * @return coords_t 
+ *
+ * @param container
+ * @param component
+ * @return coords_t
  */
 coords_t gui_component_get_screen_position(container_t *container,
-                                          component_t *component);
+                                           component_t *component);
 
 // gui_one_container.c
 /**
  * @brief Create ONE container that holds only one component
- * 
- * @param x 
- * @param y 
- * @return container_t 
+ *
+ * @param x
+ * @param y
+ * @return container_t
  */
 container_t gui_one_container_create(int16_t x, int16_t y);
 
 /**
  * @brief Set ONE container component
- * 
- * @param container 
- * @param component 
+ *
+ * @param container
+ * @param component
  * @return component_t* set component
  */
 component_t *gui_one_container_set_component(container_t *container,
-                                     component_t component);
+                                             component_t component);
 
 /**
  * @brief Get ONE container component if it is set
- * 
- * @param container 
- * @return component_t* 
+ *
+ * @param container
+ * @return component_t*
  */
 component_t *gui_one_container_get_component(container_t *container);
 
 /**
  * @brief Render ONE container
- * 
- * @param gui 
- * @param container 
+ *
+ * @param gui
+ * @param container
  */
 void gui_one_container_render(gui_t *gui, container_t *container);
 
 /**
  * @brief Update ONE container
- * 
- * @param gui 
- * @param container 
+ *
+ * @param gui
+ * @param container
  */
 void gui_one_container_update(gui_t *gui, container_t *container);
 
 // gui_group_container.c
 /**
  * @brief Create GROUP container holding n components
- * 
- * @param x 
- * @param y 
+ *
+ * @param x
+ * @param y
  * @param components array of components of fixed size
  * @param components_size size of components
- * @return container_t 
+ * @return container_t
  */
-container_t gui_group_container_create(int16_t x, int16_t y, component_t *components, uint16_t components_size);
+container_t gui_group_container_create(int16_t x, int16_t y,
+                                       component_t *components,
+                                       uint16_t components_size);
 
 /**
  * @brief Add component to GROUP container
- * 
- * @param container 
- * @param component 
+ *
+ * @param container
+ * @param component
  * @return component_t*
- * @return NULL if container is full 
+ * @return NULL if container is full
  */
 component_t *gui_group_container_add_component(container_t *container,
-                                       component_t component);
+                                               component_t component);
 
 void gui_group_container_render(gui_t *gui, container_t *container);
 void gui_group_container_update(gui_t *gui, container_t *container);
