@@ -14,8 +14,8 @@ endif
 TARGET_DIR ?= /tmp/$(shell whoami)
 TARGET_USER ?= root
 # for use from Eduroam network use TARGET_IP=localhost and enable next line
-#SSH_OPTIONS=-o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o "Port=2222"
-#SSH_GDB_TUNNEL_REQUIRED=y
+SSH_OPTIONS=-o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o "Port=2222"
+SSH_GDB_TUNNEL_REQUIRED=y
 SSH_OPTIONS+=-i ~/.ssh/mzapo-root-key
 #SSH_OPTIONS=-i /opt/zynq/ssh-connect/mzapo-root-key
 #SSH_OPTIONS=-o 'ProxyJump=ctu_login@postel.felk.cvut.cz'
@@ -24,6 +24,7 @@ IMAGE_VIEWER=$(BIN_DIR)/image-viewer
 LIB_PHERIPHERALS=$(BIN_DIR)/libmzapo-pheripherals.so
 LIB_GUI=$(BIN_DIR)/libmzapo-gui.so
 TEXT_VIEWER=$(BIN_DIR)/text-viewer
+FILE_BROWSER=$(BIN_DIR)/file-browser
 
 ifdef COMPUTER
 DEPENDENCIES=./.computer
@@ -31,18 +32,22 @@ else
 DEPENDENCIES=./.arm
 endif
 
-all: $(DEPENDENCIES) image-viewer text-viewer
+all: $(DEPENDENCIES) image-viewer text-viewer file-browser
 
 image-viewer: $(IMAGE_VIEWER)
 lib-pheripherals: $(LIB_PHERIPHERALS)
 lib-gui: $(LIB_GUI)
 text-viewer: $(TEXT_VIEWER)
+file-browser: $(FILE_BROWSER)
 
 $(IMAGE_VIEWER): $(DEPENDENCIES) lib-pheripherals FORCE
 	@make -C image-viewer
 
 $(TEXT_VIEWER): $(DEPENDENCIES) lib-pheripherals lib-gui FORCE
 	@make -C text-viewer
+
+$(FILE_BROWSER): $(DEPENDENCIES) lib-pheripherals lib-gui FORCE
+	@make -C file-browser
 
 $(DEPENDENCIES):
 	@make clean
@@ -68,8 +73,9 @@ run-text-viewer: copy-executable
 
 clean:
 	@make -C image-viewer clean
-	@make -C lib-pheripherals clean
 	@make -C text-viewer clean
+	@make -C file-browser clean
+	@make -C lib-pheripherals clean
 	@make -C lib-gui clean
 	$(RM) -rf $(BIN_DIR)
 	$(RM) -rf ./.computer ./.arm
