@@ -15,10 +15,8 @@ CFLAGS =-g -std=gnu99 -O1 -Wall -D ILI9481
 CXXFLAGS = -g -std=gnu++11 -O1 -Wall
 
 ifdef COMPUTER
-LDFLAGS = -lrt -lpthread -lmagic -ljpeg -lpng $(shell sdl2-config --libs) -lSDL2_image
-CFLAGS += -DCOMPUTER $(shell sdl2-config --cflags)
+CFLAGS += -DCOMPUTER
 else
-LDFLAGS = -lrt -lpthread -l :libmagic.so.1 -l :libjpeg.so.62 -l :libz.so -l :libpng16.so.16
 endif
 
 NAME=mzapo-gui
