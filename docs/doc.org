@@ -1,6 +1,7 @@
 #+TITLE: APO - Semestrální práce
 #+SUBTITLE: Průzkumník souborů, prohlížeč obrázků, textových souborů
 #+AUTHOR: František Boháček
+#+DATE: červen 2020
 
 * Zadání
 Semestrální práce bude rozdělena do 3 jednotlivých programů vypracovaných pro MZAPO. Hlavní z nich
