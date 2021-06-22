@@ -8,6 +8,7 @@
 #include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define BUFFER_LENGTH 4
 
@@ -231,24 +232,32 @@ image_error_t image_deduce_type(image_t *image) {
     return image_error_from_errno();
   }
 
-  uint8_t data[BUFFER_LENGTH];
-  if (fread(data, 1, BUFFER_LENGTH, file) != BUFFER_LENGTH) {
-    fclose(file);
-    return IMERR_UNKNOWN;
-  }
+  magic_t magic = magic_open(MAGIC_MIME_TYPE);
+  magic_load(magic, NULL);
 
-  fclose(file);
+  const char *mime = magic_file(magic, image->path);
 
-  if (data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) {
+  if (strstr(mime, "jpeg") != NULL || strstr(mime, "jpg") != NULL) {
     image->type = IMG_JPG;
-  } else if (data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E &&
-             data[3] == 0x47) {
+  } else if (strstr(mime, "image/png") != NULL) {
     image->type = IMG_PNG;
-  } else if (data[0] == 'P' && data[1] == '6') {
-    image->type = IMG_PPM;
   } else {
-    return IMERR_UNKNOWN_FORMAT;
+    uint8_t data[BUFFER_LENGTH];
+    if (fread(data, 1, BUFFER_LENGTH, file) != BUFFER_LENGTH) {
+      fclose(file);
+      return IMERR_UNKNOWN;
+    }
+
+    fclose(file);
+
+    if (data[0] == 'P' && data[1] == '6') {
+      image->type = IMG_PPM;
+    } else {
+      magic_close(magic);
+      return IMERR_UNKNOWN_FORMAT;
+    }
   }
 
+  magic_close(magic);
   return IMERR_SUCCESS;
 }
