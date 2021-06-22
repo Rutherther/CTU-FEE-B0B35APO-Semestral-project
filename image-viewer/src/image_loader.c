@@ -12,7 +12,8 @@
 
 #define BUFFER_LENGTH 4
 
-image_error_t image_loader_load(image_t *image, image_load_callback callback, void *state) {
+image_error_t image_loader_load(image_t *image, image_load_callback callback,
+                                void *state) {
   image_error_t error = image_deduce_type(image);
   if (error != IMERR_SUCCESS) {
     return error;
@@ -50,18 +51,25 @@ image_error_t image_loader_load_ppm(image_t *image,
     return image_error_from_errno();
   }
 
-  char null[10];
+  char descriptor[10];
   short maxBrightness;
 
-  if (fscanf(file, "%2s %hd %hd %hd", null, &image->width, &image->height, &maxBrightness) != 4) {
+  if (fscanf(file, "%2s %hd %hd %hd", descriptor, &image->width, &image->height,
+             &maxBrightness) != 4) {
+    return IMERR_WRONG_FORMAT;
+  }
+
+  if (strcmp(descriptor, "P6") != 0) {
     return IMERR_WRONG_FORMAT;
   }
 
   fseek(file, 1, SEEK_CUR);
 
-  raw_pixel_onebit_t max = {.red = maxBrightness, .green = maxBrightness, .blue = maxBrightness};
+  raw_pixel_onebit_t max = {
+      .red = maxBrightness, .green = maxBrightness, .blue = maxBrightness};
 
-  image->pixels = malloc(image->width * image->height * sizeof(display_pixel_t));
+  image->pixels =
+      malloc(image->width * image->height * sizeof(display_pixel_t));
   if (image->pixels == NULL) {
     return IMERR_UNKNOWN;
   }
@@ -124,8 +132,8 @@ image_error_t image_loader_load_jpeg(image_t *image,
   jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
   fclose(infile);
-  
-  image->pixels = (display_pixel_t*)out;
+
+  image->pixels = (display_pixel_t *)out;
   return IMERR_SUCCESS;
 }
 
@@ -136,7 +144,8 @@ image_error_t image_loader_load_png(image_t *image,
     return image_error_from_errno();
   }
 
-  png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  png_structp png =
+      png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (png == NULL) {
     return IMERR_UNKNOWN;
   }
@@ -198,7 +207,8 @@ image_error_t image_loader_load_png(image_t *image,
   fclose(infile);
   png_destroy_read_struct(&png, &info, NULL);
 
-  display_pixel_t *pixels = malloc(sizeof(display_pixel_t) * image->width * image->height);
+  display_pixel_t *pixels =
+      malloc(sizeof(display_pixel_t) * image->width * image->height);
   if (pixels == NULL) {
     png_destroy_read_struct(&png, &info, NULL);
     free(row_pointers);
@@ -213,9 +223,12 @@ image_error_t image_loader_load_png(image_t *image,
       int alpha = px[3];
 
       int coef = 255 * 255;
-      pixels[y * image->width + x].fields.r = ((double)px[0] * alpha / coef) * DISPLAY_MAX_RED;
-      pixels[y * image->width + x].fields.g = ((double)px[1] * alpha / coef) * DISPLAY_MAX_GREEN;
-      pixels[y * image->width + x].fields.b = ((double)px[2] * alpha / coef) * DISPLAY_MAX_BLUE;
+      pixels[y * image->width + x].fields.r =
+          ((double)px[0] * alpha / coef) * DISPLAY_MAX_RED;
+      pixels[y * image->width + x].fields.g =
+          ((double)px[1] * alpha / coef) * DISPLAY_MAX_GREEN;
+      pixels[y * image->width + x].fields.b =
+          ((double)px[2] * alpha / coef) * DISPLAY_MAX_BLUE;
     }
 
     callback(state, 0.5 + 0.5 * ((double)y / image->height));
@@ -241,21 +254,13 @@ image_error_t image_deduce_type(image_t *image) {
     image->type = IMG_JPG;
   } else if (strstr(mime, "image/png") != NULL) {
     image->type = IMG_PNG;
+  } else if (strstr(mime, "image/x-portable-pixmap") != NULL ||
+             strstr(mime, "image/x-portable-anymap") != NULL) {
+    image->type = IMG_PPM;
   } else {
-    uint8_t data[BUFFER_LENGTH];
-    if (fread(data, 1, BUFFER_LENGTH, file) != BUFFER_LENGTH) {
-      fclose(file);
-      return IMERR_UNKNOWN;
-    }
-
-    fclose(file);
-
-    if (data[0] == 'P' && data[1] == '6') {
-      image->type = IMG_PPM;
-    } else {
-      magic_close(magic);
-      return IMERR_UNKNOWN_FORMAT;
-    }
+    magic_close(magic);
+    image->type = IMG_UNKNOWN;
+    return IMERR_UNKNOWN_FORMAT;
   }
 
   magic_close(magic);
