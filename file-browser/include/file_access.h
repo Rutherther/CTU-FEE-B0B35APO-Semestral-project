@@ -92,7 +92,7 @@ typedef file_operation_error_t (*close_directory_fn)(fileaccess_state_t state,
 
 typedef file_operation_error_t (*get_mime_type_fn)(fileaccess_state_t state,
                                                    file_t *file, char *mime);
-typedef pid_or_error_t (*execute_file_fn)(fileaccess_state_t state,
+typedef executing_file_or_error_t (*execute_file_fn)(fileaccess_state_t state,
                                           file_t *file, char *args);
 
 typedef file_operation_error_t (*delete_directory_fn)(fileaccess_state_t state,
@@ -159,15 +159,15 @@ file_operation_error_t fileaccess_directory_close(fileaccess_state_t state,
                                                   directory_t *directory);
 
 file_operation_error_t fileaccess_directory_delete(fileaccess_state_t state,
-                                                  directory_t *directory);
+                                                  char *path);
 
 file_operation_error_t fileaccess_file_get_mimetype(fileaccess_state_t state,
                                                     file_t *file,
                                                     /*out*/ char *mime);
 
-pid_or_error_t fileaccess_file_execute(fileaccess_state_t state, file_t *file,
+executing_file_or_error_t fileaccess_file_execute(fileaccess_state_t state, file_t *file,
                                        char *args);
-pid_or_error_t fileaccess_file_delete(fileaccess_state_t state, char *path);
+file_operation_error_t fileaccess_file_delete(fileaccess_state_t state, char *path);
 
 file_operation_error_t file_operation_error_from_errno(int error);
 
