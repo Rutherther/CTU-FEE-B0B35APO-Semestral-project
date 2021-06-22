@@ -1,6 +1,10 @@
+#ifndef __FILE_ACCESS_H__
+#define __FILE_ACCESS_H__
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <sys/types.h>
+#include "file_execute.h"
 
 typedef enum {
   TYPE_FOLDER,
@@ -46,6 +50,8 @@ typedef enum {
   FILOPER_PERMISSIONS,
   FILOPER_DOES_NOT_EXIST,
   FILOPER_USED,
+  FILOPER_ALREADY_EXISTS,
+  FILOPER_NOT_ENOUGH_SPACE,
   FILOPER_UNKNOWN,
 } file_operation_error_t;
 
@@ -53,9 +59,9 @@ typedef struct {
   bool error;
   union {
     file_operation_error_t error;
-    pid_t pid;
+    executing_file_t file;
   } payload;
-} pid_or_error_t;
+} executing_file_or_error_t;
 
 typedef struct {
   bool error;
@@ -90,9 +96,9 @@ typedef pid_or_error_t (*execute_file_fn)(fileaccess_state_t state,
                                           file_t *file, char *args);
 
 typedef file_operation_error_t (*delete_directory_fn)(fileaccess_state_t state,
-                                                      directory_t *directory);
+                                                      char *path);
 typedef file_operation_error_t (*delete_file_fn)(fileaccess_state_t state,
-                                                 directory_t *directory);
+                                                 char *path);
 
 struct fileaccess_t {
   fileaccess_type_t type;
@@ -136,7 +142,8 @@ extern const fileaccess_t
 extern const fileaccess_t
     temp_file_access; // state is /tmp directory descriptor
 
-extern const fileaccess_connector_t connectors[FA_COUNT*FA_COUNT];
+extern uint8_t connectors_count;
+extern const fileaccess_connector_t connectors[(FA_COUNT-1)*FA_COUNT];
 
 fileaccess_state_t fileaccess_init(const fileaccess_t *fileaccess, void *data);
 bool fileaccess_deinit(fileaccess_state_t state);
@@ -151,9 +158,17 @@ directory_or_error_t fileaccess_directory_create(fileaccess_state_t state,
 file_operation_error_t fileaccess_directory_close(fileaccess_state_t state,
                                                   directory_t *directory);
 
+file_operation_error_t fileaccess_directory_delete(fileaccess_state_t state,
+                                                  directory_t *directory);
+
 file_operation_error_t fileaccess_file_get_mimetype(fileaccess_state_t state,
                                                     file_t *file,
                                                     /*out*/ char *mime);
 
 pid_or_error_t fileaccess_file_execute(fileaccess_state_t state, file_t *file,
                                        char *args);
+pid_or_error_t fileaccess_file_delete(fileaccess_state_t state, char *path);
+
+file_operation_error_t file_operation_error_from_errno(int error);
+
+#endif // __FILE_ACCESS_H__

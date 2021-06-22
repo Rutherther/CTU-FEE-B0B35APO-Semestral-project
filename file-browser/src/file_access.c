@@ -1,5 +1,8 @@
 #include "file_access.h"
 #include <string.h>
+#include <errno.h>
+
+uint8_t connectors_count = 1;
 
 fileaccess_state_t fileaccess_init(const fileaccess_t *fileaccess, void *data) {
   return fileaccess->init(data);
@@ -37,4 +40,21 @@ file_operation_error_t fileaccess_file_get_mimetype(fileaccess_state_t state,
 pid_or_error_t fileaccess_file_execute(fileaccess_state_t state, file_t *file,
                                        char *args) {
   return state.fileaccess->execute_file(state, file, args);
+}
+
+file_operation_error_t file_operation_error_from_errno(int error) {
+  switch (error) {
+  case EACCES:
+  case EROFS:
+    return FILOPER_PERMISSIONS;
+  case EEXIST:
+  case ENOTDIR:
+    return FILOPER_ALREADY_EXISTS;
+  case ENOENT:
+    return FILOPER_DOES_NOT_EXIST;
+  case ENOSPC:
+    return FILOPER_NOT_ENOUGH_SPACE;
+  default:
+    return FILOPER_UNKNOWN;
+  }
 }
