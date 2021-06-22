@@ -17,6 +17,9 @@ char *path_join(char *base, char *relative) {
 
   size_t new_len = base_len + relative_len + 1; // length of the string
   char *out = malloc((new_len + 1) * sizeof(out)); // length of the string plus one for \0
+  if (out == NULL) {
+    return NULL;
+  }
   out[new_len] = '\0';
   out[base_len] = '/';
 
