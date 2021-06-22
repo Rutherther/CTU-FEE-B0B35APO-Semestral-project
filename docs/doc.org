@@ -49,10 +49,10 @@ neexistuje nebo k němu nejsou přístupová práva. Konkrétní chybová hláš
 *** Ovládání
 
 **** Standardní vstup
-- h, j, k, l - pohyb pohledu po souboru (doleva, dolů, nahoru, doprava)
-- r - vrácení pohledu na začátek souboru
-- t - pohled na konec souboru
-- e - ukončení programu
+- ~h~, ~j~, ~k~, ~l~ - pohyb pohledu po souboru (doleva, dolů, nahoru, doprava)
+- ~r~ - vrácení pohledu na začátek souboru
+- ~t~ - pohled na konec souboru
+- ~e~ - ukončení programu
 
 **** Rotační enkodery
 - První (červený) - horizontální posun pohledu
@@ -96,11 +96,11 @@ neexistuje, není správný formát nebo k němu nejsou přístupová práva. Ko
 Program má kurzor, podle kterého se určuje, kam se přibližuje. Kurzor se zobrazí, když se s ním hýbe a chvilku potom. 
 
 **** Standardní vstup
-- h, j, k, l - ovládání kurzoru nebo posunu po celém obrázku v závislosti na módu, viz klávesa m (doleva, dolů, nahoru, doprava)
-- z, x - přiblížení a oddálení obrázku (do místa, kde je kurzor)
-- r - vrácení do původního stavu (oddálí obrázek a nastaví kurzor doprostřed obrázku)
-- m - přepnutí mezi módy pohybu po obrázku nebo pohybu kurzorem
-- e - ukončení programu
+- ~h~, ~j~, ~k~, ~l~ - ovládání kurzoru nebo posunu po celém obrázku v závislosti na módu, viz klávesa m (doleva, dolů, nahoru, doprava)
+- ~z~, ~x~ - přiblížení a oddálení obrázku (do místa, kde je kurzor)
+- ~r~ - vrácení do původního stavu (oddálí obrázek a nastaví kurzor doprostřed obrázku)
+- ~m~ - přepnutí mezi módy pohybu po obrázku nebo pohybu kurzorem
+- ~e~ - ukončení programu
 
 **** Rotační enkodery
 - První (červený) - posun kurzoru horizontálně nebo posun horizontálně celého obrázku (viz tlačítko druhého enkoderu)
@@ -113,26 +113,26 @@ Program má kurzor, podle kterého se určuje, kam se přibližuje. Kurzor se zo
 * Kompilace, instalace, spouštění
 Na kompilaci je použit Makefile.
 
-** Křížová kompilace
-Pro křížovou kompilaci je zapotřebí arm-gnueabihf-gcc a dynamické knihovny
-libjpeg verze 62, libpng verze 16 a libmagic verze 1 pro MZAPO.
+** Křížová kompilace pro MZAPO
+Pro křížovou kompilaci je zapotřebí ~arm-gnueabihf-gcc~ a dynamické knihovny
+~libjpeg~ verze 62, ~libpng~ verze 16 a ~libmagic~ verze 1 pro MZAPO.
 
-Soubory se po kompilacia uloží do složky bin, pro spuštění je potřeba
+Soubory se po kompilaci uloží do složky ~bin~, pro spuštění je potřeba
 je překopírovat na MZAPO.
 
-Překopírování jde realizovat pomocí ssh, lze použít make, konkrétně
+Překopírování jde realizovat pomocí ssh, lze použít ~make~, konkrétně
 #+begin_src
 TARGET_IP=[ip-addr] make copy-executable
 #+end_src
-kde za ip-addr je potřeba dosadit ip adresu MZAPO.
+kde za ~ip-addr~ je potřeba dosadit ip adresu MZAPO.
 
-Pro spuštění lze využít sériového portu nebo ssh. Případně pomocí make,
+Pro spuštění lze využít sériového portu nebo ssh. Případně pomocí ~make~,
 na spuštění průzkumníku souborů:
 #+begin_src
 TARGET_IP=[ip-addr] make run
 #+end_src
-případně pro spuštění prohlížeče obrázků run-image-viewer
-a pro spuštění prohlížeče textových souborů run-text-viewer.
+případně pro spuštění prohlížeče obrázků ~run-image-viewer~
+a pro spuštění prohlížeče textových souborů ~run-text-viewer~.
 Pro předání argumentu slouží environment proměnná ARG
 
 Například lze použít
@@ -148,11 +148,11 @@ Pro lepší ladění je možnost program zkompilovat
 pro osobní počítač, kde je displej simulován
 pomocí SDL okna.
 
-Pro kompilaci pro počítač lze využít environment proměnné COMPUTER.
+Pro kompilaci pro počítač lze využít environment proměnné ~COMPUTER~.
 Lze pak využít
 #+begin_src
 COMPUTER=1 make
 #+end_src
 
-Po kompilaci jsou soubory ve složce bin v kořenu projektu.
+Po kompilaci jsou soubory ve složce ~bin~ v kořenu projektu.
 Lze je spustit napřímo s potřebnými parametry viz Manuál.
