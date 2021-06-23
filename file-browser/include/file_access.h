@@ -6,11 +6,13 @@
 #include <sys/types.h>
 #include "file_execute.h"
 
+typedef struct directory_t directory_t;
+
 typedef enum {
-  TYPE_FOLDER,
-  TYPE_FILE,
-  TYPE_OTHER,
-  TYPE_UNKNOWN,
+  FT_FOLDER,
+  FT_FILE,
+  FT_OTHER,
+  FT_UNKNOWN,
 } filetype_t;
 
 typedef enum {
@@ -21,29 +23,24 @@ typedef enum {
 } fileaccess_type_t;
 
 typedef struct {
-  uint8_t owner : 3;
-  uint8_t group : 3;
-  uint8_t other : 3;
-} file_permissions_t;
-
-typedef struct {
-  char *path;
+  char *name;
+  directory_t *directory;
   filetype_t type;
 
   // stats
   uint64_t size;
-  uint64_t modify_date;
-  uint64_t create_date;
-  file_permissions_t permissions;
-  char *owner;
-  char *group_owner;
+  time_t modify_time;
+
+  mode_t permissions;
+  uid_t uid;
+  gid_t gid;
 } file_t;
 
-typedef struct {
+struct directory_t {
   char *path;
   file_t *files;
   uint32_t files_count;
-} directory_t;
+};
 
 typedef enum {
   FILOPER_SUCCESS,
@@ -142,8 +139,8 @@ extern const fileaccess_t
 extern const fileaccess_t
     temp_file_access; // state is /tmp directory descriptor
 
-extern uint8_t connectors_count;
-extern const fileaccess_connector_t connectors[(FA_COUNT-1)*FA_COUNT];
+extern uint8_t fileaccess_connectors_count;
+extern fileaccess_connector_t fileaccess_connectors[(FA_COUNT-1)*FA_COUNT];
 
 fileaccess_state_t fileaccess_init(const fileaccess_t *fileaccess, void *data);
 bool fileaccess_deinit(fileaccess_state_t state);
