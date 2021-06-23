@@ -10,13 +10,13 @@
 static int nfw_callback(const char *fpath, const struct stat *sb, int typeflag);
 
 size_t file_get_full_path_memory_size(fileaccess_state_t state, directory_t *directory, file_t *file) {
-  return strlen(file->name) + strlen(state.state) + strlen(file->name) + 3;
+  return strlen(file->name) + strlen(state.payload.local.path) + strlen(file->name) + 3;
 }
 
 bool file_get_full_path(fileaccess_state_t state,
                         directory_t *directory, file_t *file, char *out) {
-  char base_path[path_join_memory_size(state.state, directory->path)];
-  if (!path_join((char*)state.state, directory->path, base_path)) {
+  char base_path[path_join_memory_size(state.payload.local.path, directory->path)];
+  if (!path_join((char*)state.payload.local.path, directory->path, base_path)) {
     return false;
   }
 

@@ -14,8 +14,8 @@ file_operation_error_t local_connector_file_copy(
                                                file)];
   file_get_full_path(first_state, file->directory, file, src_path);
 
-  char dst_path[path_join_memory_size(second_state.state, destination)];
-  path_join(second_state.state, destination, dst_path);
+  char dst_path[path_join_memory_size(second_state.payload.local.path, destination)];
+  path_join(second_state.payload.local.path, destination, dst_path);
 
   // TODO: copy folders
 
@@ -38,7 +38,7 @@ file_operation_error_t local_connector_file_copy(
     fwrite(buffer, sizeof(char), in, dst_file);
   }
 
-  file_operation_error_t error;
+  file_operation_error_t error = FILOPER_SUCCESS;
   if (!feof(src_file) && ferror(src_file)) {
     error = file_operation_error_from_errno(ferror(src_file));
   } else if (ferror(dst_file)) {
@@ -47,7 +47,7 @@ file_operation_error_t local_connector_file_copy(
 
   fclose(src_file);
   fclose(dst_file);
-  return FILOPER_SUCCESS;
+  return error;
 }
 
 file_operation_error_t local_connector_file_move(
@@ -56,8 +56,8 @@ file_operation_error_t local_connector_file_move(
   file_operation_error_t error = FILOPER_SUCCESS;
   char src_path[file_get_full_path_memory_size(first_state, file->directory,
                                                file)];
-  char dst_path[path_join_memory_size(second_state.state, destination)];
-  path_join(second_state.state, destination, dst_path);
+  char dst_path[path_join_memory_size(second_state.payload.local.path, destination)];
+  path_join(second_state.payload.local.path, destination, dst_path);
 
   int status = rename(src_path, dst_path);
   if (status == 0) {

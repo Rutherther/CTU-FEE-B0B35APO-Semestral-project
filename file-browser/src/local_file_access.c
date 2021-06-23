@@ -14,7 +14,7 @@
 #define ROOT "/"
 
 fileaccess_state_t local_fileaccess_init_state(void *data) {
-  fileaccess_state_t state = {.state = ROOT, .fileaccess = &local_file_access};
+  fileaccess_state_t state = {.payload.local.path = ROOT, .fileaccess = &local_file_access};
   return state;
 }
 
@@ -67,8 +67,8 @@ static file_operation_error_t file_get_information(void **malloced,
 directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
                                                      char *path) {
   directory_or_error_t ret;
-  char full_path[path_join_memory_size(state.state, path)];
-  path_join((char *)state.state, path, full_path);
+  char full_path[path_join_memory_size(state.payload.local.path, path)];
+  path_join((char *)state.payload.local.path, path, full_path);
 
   uint64_t malloc_offset = sizeof(directory_t) + strlen(path) + 1;
   uint64_t bytes_malloced = sizeof(directory_t) + strlen(path) + 1;
@@ -138,14 +138,14 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
 }
 
 directory_or_error_t local_fileaccess_root_list(fileaccess_state_t state) {
-  return local_fileaccess_directory_list(state, (char *)state.state);
+  return local_fileaccess_directory_list(state, (char *)state.payload.local.path);
 }
 
 directory_or_error_t local_fileaccess_directory_create(fileaccess_state_t state,
                                                        char *path) {
   directory_or_error_t ret;
-  char full_path[path_join_memory_size(state.state, path)];
-  path_join((char *)state.state, path, full_path);
+  char full_path[path_join_memory_size(state.payload.local.path, path)];
+  path_join((char *)state.payload.local.path, path, full_path);
 
   int status = mkdir(full_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
@@ -162,8 +162,8 @@ directory_or_error_t local_fileaccess_directory_create(fileaccess_state_t state,
 file_operation_error_t
 local_fileaccess_directory_delete(fileaccess_state_t state, char *path) {
   file_operation_error_t error = FILOPER_SUCCESS;
-  char full_path[path_join_memory_size(state.state, path)];
-  path_join((char *)state.state, path, full_path);
+  char full_path[path_join_memory_size(state.payload.local.path, path)];
+  path_join((char *)state.payload.local.path, path, full_path);
 
   int status = directory_delete(full_path);
   if (status != 0) {
@@ -228,8 +228,8 @@ executing_file_or_error_t local_fileaccess_file_execute(fileaccess_state_t state
 file_operation_error_t local_fileaccess_file_delete(fileaccess_state_t state,
                                                     char *path) {
   file_operation_error_t error = FILOPER_SUCCESS;
-  char full_path[path_join_memory_size(state.state, path)];
-  path_join((char *)state.state, path, full_path);
+  char full_path[path_join_memory_size(state.payload.local.path, path)];
+  path_join((char *)state.payload.local.path, path, full_path);
 
   int status = remove(path);
 

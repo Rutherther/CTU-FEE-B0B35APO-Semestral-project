@@ -71,8 +71,25 @@ typedef struct {
 typedef struct fileaccess_t fileaccess_t;
 
 typedef struct {
+  char *path;
+} local_fileaccess_state_t;
+
+typedef struct {
+  char *path; // ORDER MATTERS!
+  char *mount_device;
+  bool mounted;
+  file_operation_error_t error;
+} extern_fileaccess_state_t;
+
+typedef local_fileaccess_state_t temp_fileaccess_state_t;
+
+typedef struct {
   const fileaccess_t *fileaccess;
-  void *state;
+  union {
+    local_fileaccess_state_t local;
+    local_fileaccess_state_t temp;
+    extern_fileaccess_state_t exter;
+  } payload;
 } fileaccess_state_t;
 
 typedef fileaccess_state_t (*init_state_fn)(void *data);
