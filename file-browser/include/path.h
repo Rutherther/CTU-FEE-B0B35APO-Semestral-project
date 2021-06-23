@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-char *path_join(char *base, char *relative);
+size_t path_join_memory_size(char *base, char *relative);
+bool path_join(char *base, char *relative, char *out);
 
 #endif // __PATH_H__

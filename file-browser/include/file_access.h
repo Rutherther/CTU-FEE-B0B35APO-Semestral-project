@@ -118,11 +118,11 @@ struct fileaccess_t {
 
 typedef struct fileaccess_connector_t fileaccess_connector_t;
 typedef file_operation_error_t (*file_copy_fn)(
-    fileaccess_connector_t *connector, void *first_state, void *second_state,
-    file_t *file, char *destination);
+    fileaccess_connector_t *connector, fileaccess_state_t first_state,
+    fileaccess_state_t second_state, file_t *file, char *destination);
 typedef file_operation_error_t (*file_move_fn)(
-    fileaccess_connector_t *connector, void *first_state, void *second_state,
-    file_t *file, char *destination);
+    fileaccess_connector_t *connector, fileaccess_state_t first_state,
+    fileaccess_state_t second_state, file_t *file, char *destination);
 
 struct fileaccess_connector_t {
   const fileaccess_t *first;

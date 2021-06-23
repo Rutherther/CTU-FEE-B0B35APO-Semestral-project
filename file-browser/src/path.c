@@ -2,7 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-char *path_join(char *base, char *relative) {
+size_t path_join_memory_size(char *base, char *relative) {
+  return strlen(base) + strlen(relative) + 1;
+}
+
+bool path_join(char *base, char *relative, char *out) {
   size_t base_len = strlen(base);
   size_t relative_len = strlen(relative);
 
@@ -16,15 +20,11 @@ char *path_join(char *base, char *relative) {
   }
 
   size_t new_len = base_len + relative_len + 1; // length of the string
-  char *out = malloc((new_len + 1) * sizeof(out)); // length of the string plus one for \0
-  if (out == NULL) {
-    return NULL;
-  }
   out[new_len] = '\0';
   out[base_len] = '/';
 
   memcpy(out, base, base_len);
   memcpy(out + base_len + 1, relative, relative_len);
 
-  return out;
+  return true;
 }

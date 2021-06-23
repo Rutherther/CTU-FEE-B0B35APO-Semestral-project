@@ -1,5 +1,6 @@
 #include "local_file_access.h"
 #include "file_access.h"
+#include "local_file_utils.h"
 #include "path.h"
 #include <errno.h>
 #include <ftw.h>
@@ -11,54 +12,6 @@
 #include <dirent.h>
 
 #define ROOT "/"
-static int nfw_callback(const char *fpath, const struct stat *sb, int typeflag);
-static int delete_file(const char *path);
-static int delete_directory(const char *path);
-
-static char *file_get_full_path(fileaccess_state_t state,
-                                directory_t *directory, file_t *file) {
-  char *base_path = path_join((char*)state.state, directory->path);
-
-  if (base_path == NULL) {
-    return NULL;
-  }
-
-  char *full_path = path_join(base_path, file->name);
-  free(base_path);
-
-  return full_path;
-}
-
-static int delete_directory(const char *path) {
-  int err = ftw(path, nfw_callback, 5);
-  if (err != 1) {
-    err = FILOPER_UNKNOWN;
-  }
-
-  if (err != 0) {
-    return err;
-  }
-
-  return delete_file(path);
-}
-
-static int delete_file(const char *path) {
-  int err = 0;
-  if (remove(path) == -1) {
-    err = file_operation_error_from_errno(errno);
-  }
-
-  return err;
-}
-
-static int nfw_callback(const char *fpath, const struct stat *sb,
-                        int typeflag) {
-  if (typeflag == FTW_D) {
-    return delete_directory(fpath);
-  } else {
-    return delete_file(fpath);
-  }
-}
 
 fileaccess_state_t local_fileaccess_init_state(void *data) {
   fileaccess_state_t state = {.state = ROOT, .fileaccess = &local_file_access};
@@ -83,16 +36,12 @@ static file_operation_error_t file_get_information(void **malloced,
   }
   *malloced = new;
 
-  char *full_path = file_get_full_path(state, file.directory, &file);
-  if (full_path == NULL) {
-    free(new);
-    return FILOPER_UNKNOWN;
-  }
+  char full_path[file_get_full_path_memory_size(state, file.directory, &file)];
+  file_get_full_path(state, file.directory, &file, full_path);
 
   // load info
   struct stat stats;
   int status = stat(full_path, &stats);
-  free(full_path);
 
   if (status == -1) {
     free(new);
@@ -118,12 +67,8 @@ static file_operation_error_t file_get_information(void **malloced,
 directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
                                                      char *path) {
   directory_or_error_t ret;
-  char *full_path = path_join((char *)state.state, path);
-  if (full_path == NULL) {
-    ret.error = true;
-    ret.payload.error = FILOPER_UNKNOWN;
-    return ret;
-  }
+  char full_path[path_join_memory_size(state.state, path)];
+  path_join((char *)state.state, path, full_path);
 
   uint64_t malloc_offset = sizeof(directory_t) + strlen(path) + 1;
   uint64_t bytes_malloced = sizeof(directory_t) + strlen(path) + 1;
@@ -133,7 +78,6 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
   if (directory == NULL) {
     ret.error = true;
     ret.payload.error = FILOPER_UNKNOWN;
-    free(full_path);
     return ret;
   }
 
@@ -142,7 +86,6 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
 
 
   DIR *dirptr = opendir(full_path);
-  free(full_path);
   if (dirptr == NULL) {
     ret.error = true;
     ret.payload.error = file_operation_error_from_errno(errno);
@@ -201,12 +144,8 @@ directory_or_error_t local_fileaccess_root_list(fileaccess_state_t state) {
 directory_or_error_t local_fileaccess_directory_create(fileaccess_state_t state,
                                                        char *path) {
   directory_or_error_t ret;
-  char *full_path = path_join((char *)state.state, path);
-  if (full_path == NULL) {
-    ret.error = true;
-    ret.payload.error = FILOPER_UNKNOWN;
-    return ret;
-  }
+  char full_path[path_join_memory_size(state.state, path)];
+  path_join((char *)state.state, path, full_path);
 
   int status = mkdir(full_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
@@ -217,24 +156,20 @@ directory_or_error_t local_fileaccess_directory_create(fileaccess_state_t state,
     ret = local_fileaccess_directory_list(state, full_path);
   }
 
-  free(full_path);
   return ret;
 }
 
 file_operation_error_t
 local_fileaccess_directory_delete(fileaccess_state_t state, char *path) {
   file_operation_error_t error = FILOPER_SUCCESS;
-  char *full_path = path_join((char *)state.state, path);
-  if (full_path == NULL) {
-    return FILOPER_UNKNOWN;
-  }
+  char full_path[path_join_memory_size(state.state, path)];
+  path_join((char *)state.state, path, full_path);
 
-  int status = delete_directory(full_path);
+  int status = directory_delete(full_path);
   if (status != 0) {
     error = status;
   }
 
-  free(full_path);
   return error;
 }
 
@@ -253,10 +188,8 @@ local_fileaccess_file_get_mime_type(fileaccess_state_t state, file_t *file,
   magic_t magic = magic_open(MAGIC_MIME_TYPE);
   magic_load(magic, NULL);
 
-  char *full_path = file_get_full_path(state, file->directory, file);
-  if (full_path == NULL) {
-    return FILOPER_UNKNOWN;
-  }
+  char full_path[file_get_full_path_memory_size(state, file->directory, file)];
+  file_get_full_path(state, file->directory, file, full_path);
 
   const char *data = magic_file(magic, full_path);
   if (data == NULL) {
@@ -269,7 +202,6 @@ local_fileaccess_file_get_mime_type(fileaccess_state_t state, file_t *file,
   }
   mime[i] = '\0';
 
-  free(full_path);
   magic_close(magic);
   return error;
 }
@@ -277,14 +209,9 @@ local_fileaccess_file_get_mime_type(fileaccess_state_t state, file_t *file,
 executing_file_or_error_t local_fileaccess_file_execute(fileaccess_state_t state,
                                              file_t *file, char *args) {
   executing_file_or_error_t ret;
-  char *full_path = file_get_full_path(state, file->directory, file);
+  char full_path[file_get_full_path_memory_size(state, file->directory, file)];
+  file_get_full_path(state, file->directory, file, full_path);
   // TODO: check permissions
-
-  if (full_path == NULL) {
-    ret.error = true;
-    ret.payload.error = FILOPER_UNKNOWN;
-    return ret;
-  }
 
   executing_file_error_t efile = executing_file_execute(full_path, args);
   if (efile.error == true) {
@@ -295,18 +222,14 @@ executing_file_or_error_t local_fileaccess_file_execute(fileaccess_state_t state
     ret.payload.file = efile.file;
   }
 
-  free(full_path);
   return ret;
 }
 
 file_operation_error_t local_fileaccess_file_delete(fileaccess_state_t state,
                                                     char *path) {
   file_operation_error_t error = FILOPER_SUCCESS;
-  char *full_path = path_join((char *)state.state, path);
-
-  if (full_path == NULL) {
-    return FILOPER_UNKNOWN;
-  }
+  char full_path[path_join_memory_size(state.state, path)];
+  path_join((char *)state.state, path, full_path);
 
   int status = remove(path);
 
@@ -314,7 +237,6 @@ file_operation_error_t local_fileaccess_file_delete(fileaccess_state_t state,
     error = file_operation_error_from_errno(errno);
   }
 
-  free(full_path);
   return error;
 }
 
