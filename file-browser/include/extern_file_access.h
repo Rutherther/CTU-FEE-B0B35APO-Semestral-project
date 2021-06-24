@@ -28,4 +28,4 @@ extern_fileaccess_file_execute(fileaccess_state_t state, file_t *file,
 file_operation_error_t extern_fileaccess_file_delete(fileaccess_state_t state,
                                                     char *path);
 
-#endif __EXTERN_FILE_ACCESS_H__
+#endif // __EXTERN_FILE_ACCESS_H__
