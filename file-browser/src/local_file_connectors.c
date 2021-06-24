@@ -40,9 +40,9 @@ file_operation_error_t local_connector_file_copy(
 
   file_operation_error_t error = FILOPER_SUCCESS;
   if (!feof(src_file) && ferror(src_file)) {
-    error = file_operation_error_from_errno(ferror(src_file));
+    error = file_operation_error_from_errno(errno);
   } else if (ferror(dst_file)) {
-    error = file_operation_error_from_errno(ferror(dst_file));
+    error = file_operation_error_from_errno(errno);
   }
 
   fclose(src_file);
