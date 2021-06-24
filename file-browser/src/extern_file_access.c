@@ -129,7 +129,7 @@ file_operation_error_t extern_fileaccess_file_delete(fileaccess_state_t state,
   return local_fileaccess_file_delete(state, path);
 }
 
-const fileaccess_t temp_file_access = {
+const fileaccess_t extern_file_access = {
     .type = FA_EXTERN,
     .init = extern_fileaccess_init_state,
     .deinit = extern_fileaccess_deinit_state,
