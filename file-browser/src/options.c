@@ -1,6 +1,6 @@
 #include "options.h"
 #include "file_access.h"
-#include <bits/stdint-uintn.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -47,7 +47,7 @@ file_operation_error_t exec_options_loader_load(exec_options_loader_t *loader,
   fclose(file);
   loader->exec_options = (exec_options_t*)buffer;
 
-  uint64_t buffer_ptr = (uint64_t)buffer;
+  intptr_t buffer_ptr = (intptr_t)buffer;
   loader->exec_options->options += buffer_ptr;
 
   for (int i = 0; i < loader->exec_options->options_count; i++) {
@@ -91,7 +91,7 @@ file_operation_error_t exec_options_save(exec_options_t *options, char *filename
     return file_operation_error_from_errno(errno);
   }
 
-  uint64_t chars_offset = sizeof(exec_option_t) * options->options_count;
+  intptr_t chars_offset = (intptr_t) (sizeof(exec_option_t) * options->options_count);
   file_operation_error_t error = FILOPER_SUCCESS;
   for (int i = 0; i < options->options_count; i++) {
     exec_option_t option = options->options[i];
