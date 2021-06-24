@@ -39,9 +39,17 @@ typedef enum {
   CONT_ONE,
 } container_type_t;
 
+typedef bool (*render_item)(void *state, uint32_t index, renderer_t *renderer, int16_t beg_x, int16_t beg_y);
+
 typedef struct {
-  // items
-  // scroll
+  void *state;
+  render_item render_item_fn;
+  render_item render_header_fn;
+  uint32_t items_count;
+  uint16_t item_height;
+
+  int16_t scroll_x;
+  int16_t scroll_y;
 } list_container_t;
 
 typedef struct {
@@ -301,6 +309,22 @@ component_t *gui_group_container_add_component(container_t *container,
 void gui_group_container_render(gui_t *gui, container_t *container);
 void gui_group_container_update(gui_t *gui, container_t *container);
 
-// handle commands
+// list_container.c
+container_t gui_list_container_create(void *state, uint32_t items_count,
+                                      uint16_t item_height,
+                                      render_item render_it,
+                                      render_item render_header);
+
+void gui_list_scroll(container_t *container, int16_t x, int16_t y);
+bool gui_list_container_set_state(container_t *container, void *state,
+                                  uint32_t items_count);
+bool gui_list_container_set_item_height(container_t *container,
+                                        uint16_t item_height);
+bool gui_list_container_set_render_function(container_t *container,
+                                            render_item render_it,
+                                            render_item render_header);
+
+void gui_list_container_render(gui_t *gui, container_t *container);
+void gui_list_container_update(gui_t *gui, container_t *container);
 
 #endif // __GUI_H__
