@@ -7,7 +7,7 @@
 typedef uint16_t font_bits_t;
 
 typedef struct {
-  const font_bits_t bits[256*16];
+  const font_bits_t bits[16];
   const uint8_t width;
 } font_character_t;
 
@@ -98,5 +98,6 @@ uint16_t font_fit_ellipsis(font_t *font, size2d_t size, char *text, char *ellips
 uint16_t font_fit_cut(font_t *font, size2d_t size, char *text);
 
 extern font_descriptor_t font_rom8x16;
+extern font_descriptor_t font_winFreeSystem14x16;
 
 #endif // __FONT_H__
