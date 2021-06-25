@@ -1,5 +1,4 @@
 #include "mzapo_rgb_led.h"
-#include <bits/time.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -57,9 +56,9 @@ void rgb_led_update(mzapo_rgb_led_t *rgb_led) {
   for (int i = 0; i < RGB_LEDS_COUNT; i++) {
     if (rgb_led->states[i].timeout_ms != 0) {
       struct timespec set_time = rgb_led->states[i].set_time;
-      uint32_t diff = (((now.tv_sec - set_time.tv_sec) * 1000000) +
+      uint32_t diff = (((now.tv_sec - set_time.tv_sec) * 1000) +
                        (now.tv_nsec - set_time.tv_nsec)) /
-                      1000;
+                      1000000;
 
       if (diff >= rgb_led->states[i].timeout_ms) {
         rgb_led->states[i].timeout_ms = 0;
