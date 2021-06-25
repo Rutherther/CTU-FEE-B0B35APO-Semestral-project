@@ -16,10 +16,10 @@ CFLAGS =-g -std=gnu99 -O1 -Wall -D ILI9481
 CXXFLAGS = -g -std=gnu++11 -O1 -Wall
 
 ifdef COMPUTER
-LDFLAGS = -lmzapo-pheripherals -lmagic $(shell sdl2-config --libs) -lSDL2_image
+LDFLAGS = -lmzapo-pheripherals -lmzapo-gui -lmagic $(shell sdl2-config --libs) -lSDL2_image
 CFLAGS += -DCOMPUTER $(shell sdl2-config --cflags)
 else
-LDFLAGS = -lmzapo-pheripherals -l :libmagic.so.1
+LDFLAGS = -lmzapo-pheripherals -lmzapo-gui -l :libmagic.so.1
 endif
 LDFLAGS += -Wl,-rpath,'$${ORIGIN}' $(LIB_DIR)
 
