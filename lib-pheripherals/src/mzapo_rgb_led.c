@@ -1,6 +1,7 @@
 #include "mzapo_rgb_led.h"
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
 
 mzapo_rgb_led_t rgb_led_create(unsigned char *mem_base) {
   mzapo_rgb_led_t rgb_led = {
@@ -17,6 +18,7 @@ mzapo_rgb_led_t rgb_led_create(unsigned char *mem_base) {
 void rgb_led_set(mzapo_rgb_led_t *rgb_led, mzapo_rgb_leds_t id, uint8_t r,
                  uint8_t g, uint8_t b) {
   if (rgb_led->mem_base != NULL) {
+    rgb_led->states[id].timeout_ms = 0;
     rgb_led_pixel_t *pixel = (rgb_led_pixel_t*)((void *)rgb_led->mem_base + id * 4);
     (pixel)->red = r;
     (pixel)->green = g;
@@ -57,8 +59,8 @@ void rgb_led_update(mzapo_rgb_led_t *rgb_led) {
     if (rgb_led->states[i].timeout_ms != 0) {
       struct timespec set_time = rgb_led->states[i].set_time;
       uint32_t diff = (((now.tv_sec - set_time.tv_sec) * 1000) +
-                       (now.tv_nsec - set_time.tv_nsec)) /
-                      1000000;
+                       (now.tv_nsec - set_time.tv_nsec) / 1000000);
+      printf("%u\r\n", diff);
 
       if (diff >= rgb_led->states[i].timeout_ms) {
         rgb_led->states[i].timeout_ms = 0;

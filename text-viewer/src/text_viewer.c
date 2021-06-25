@@ -267,16 +267,29 @@ void text_viewer_start_loop(text_viewer_t *text_viewer) {
 
   // main loop
   text_viewer->running = true;
+  uint32_t prev_lines_scrolled = 0;
   while (text_viewer->running) {
     commands_check_input(&commands);
 
     gui_update(&text_viewer->gui);
     gui_render(&text_viewer->gui);
+    rgb_led_update(text_viewer->pheripherals.rgb_leds);
 
+    uint32_t lines_scrolled = gui_text_view_get_lines_scrolled(text_view);
     ledstrip_turn_on(text_viewer->pheripherals.ledstrip,
-                     ((double)gui_text_view_get_lines_scrolled(text_view) /
-                     text_viewer->multiline_text->lines_count) * LED_STRIP_COUNT,
+                     ((double) lines_scrolled /
+                      text_viewer->multiline_text->lines_count) *
+                         LED_STRIP_COUNT,
                      1);
+
+    if (lines_scrolled != prev_lines_scrolled) {
+      rgb_led_set_timeout(text_viewer->pheripherals.rgb_leds, LED_LEFT, 0, 100,
+                          100, 150);
+      rgb_led_set_timeout(text_viewer->pheripherals.rgb_leds, LED_RIGHT, 0, 100,
+                          100, 150);
+
+      prev_lines_scrolled = lines_scrolled;
+    }
   }
 
   ledstrip_clear(text_viewer->pheripherals.ledstrip);
