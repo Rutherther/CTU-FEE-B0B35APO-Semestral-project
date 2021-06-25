@@ -23,24 +23,40 @@
 #include "mzapo_parlcd.h"
 #include "mzapo_regs.h"
 
+#ifdef COMPUTER
+#include "mzapo_sdl.h"
+#endif
+
 void parlcd_write_cr(unsigned char *parlcd_mem_base, uint16_t data)
 {
-  *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CR_o) = data;
+#ifndef COMPUTER
+  *(volatile uint16_t *)(parlcd_mem_base + PARLCD_REG_CR_o) = data;
+#endif
 }
 
 void parlcd_write_cmd(unsigned char *parlcd_mem_base, uint16_t cmd)
 {
-  *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CMD_o) = cmd;
+#ifdef COMPUTER
+  ((mzapo_sdl_display*)(parlcd_mem_base))->cmd(cmd);
+#else
+  *(volatile uint16_t *)(parlcd_mem_base + PARLCD_REG_CMD_o) = cmd;
+#endif
 }
 
 void parlcd_write_data(unsigned char *parlcd_mem_base, uint16_t data)
 {
+#ifdef COMPUTER
+  ((mzapo_sdl_display *)(parlcd_mem_base))->data(data);
+#else
   *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = data;
+#endif
 }
 
 void parlcd_write_data2x(unsigned char *parlcd_mem_base, uint32_t data)
 {
+#ifndef COMPUTER
   *(volatile uint32_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = data;
+#endif
 }
 
 void parlcd_delay(int msec)

@@ -25,11 +25,15 @@ LIB_PHERIPHERALS=$(BIN_DIR)/libmzapo-pheripherals.so
 LIB_GUI=$(BIN_DIR)/libmzapo-gui.so
 TEXT_VIEWER=$(BIN_DIR)/text-viewer
 FILE_BROWSER=$(BIN_DIR)/file-browser
+MZAPO_SDL=$(BIN_DIR)/libmzapo_sdl.so
 
 ifdef COMPUTER
 DEPENDENCIES=./.computer
+COMPUTER_SDL=mzapo-sdl
+INHERIT_INCLUDES += -I$(ROOT_DIR)/mzapo-sdl/include
 else
 DEPENDENCIES=./.arm
+COMPUTER_SDL=
 endif
 
 all: $(DEPENDENCIES) image-viewer text-viewer file-browser
@@ -39,14 +43,15 @@ lib-pheripherals: $(LIB_PHERIPHERALS)
 lib-gui: $(LIB_GUI)
 text-viewer: $(TEXT_VIEWER)
 file-browser: $(FILE_BROWSER)
+mzapo-sdl: $(MZAPO_SDL)
 
-$(IMAGE_VIEWER): $(DEPENDENCIES) lib-pheripherals FORCE
+$(IMAGE_VIEWER): $(DEPENDENCIES) lib-pheripherals $(COMPUTER_SDL) FORCE
 	@make -C image-viewer
 
-$(TEXT_VIEWER): $(DEPENDENCIES) lib-pheripherals lib-gui FORCE
+$(TEXT_VIEWER): $(DEPENDENCIES) lib-pheripherals lib-gui $(COMPUTER_SDL) FORCE
 	@make -C text-viewer
 
-$(FILE_BROWSER): $(DEPENDENCIES) lib-pheripherals lib-gui FORCE
+$(FILE_BROWSER): $(DEPENDENCIES) lib-pheripherals lib-gui $(COMPUTER_SDL) FORCE
 	@make -C file-browser
 
 $(DEPENDENCIES):
@@ -58,6 +63,9 @@ $(LIB_PHERIPHERALS): $(DEPENDENCIES) FORCE
 
 $(LIB_GUI): $(DEPENDENCIES) FORCE
 	@make -C lib-gui
+
+$(MZAPO_SDL): FORCE
+	@make -C mzapo-sdl
 
 copy-executable: all
 	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) killall gdbserver 1>/dev/null 2>/dev/null || true

@@ -23,12 +23,16 @@
 
 #include "mzapo_phys.h"
 
+#ifdef COMPUTER
+#include "mzapo_sdl.h"
+#endif
+
 const char *map_phys_memdev="/dev/mem";
 
 void *map_phys_address(off_t region_base, size_t region_size, int opt_cached)
 {
   #ifdef COMPUTER
-  return NULL;
+  return mzapo_sdl_map_phys(region_base, region_size);
   #else
   unsigned long mem_window_size;
   unsigned long pagesize;

@@ -24,6 +24,10 @@
 #include "serialize_lock.h"
 #include "mzapo_rgb_led.h"
 
+#ifdef COMPUTER
+#include "mzapo_sdl.h"
+#endif
+
 typedef enum {
   SUCCESS,
   TOO_FEW_ARGUMENTS,
@@ -32,6 +36,10 @@ typedef enum {
 
 int main(int argc, char *argv[])
 {
+#ifdef COMPUTER
+  mzapo_sdl_init();
+#endif
+
   /* Try to acquire lock the first */
   if (serialize_lock(1) <= 0) {
     printf("System is occupied\n");
@@ -107,5 +115,9 @@ int main(int argc, char *argv[])
               argv[1]);
 
   ledstrip_clear(&ledstrip);
+
+#ifdef COMPUTER
+  mzapo_sdl_deinit();
+#endif
   return SUCCESS;
 }

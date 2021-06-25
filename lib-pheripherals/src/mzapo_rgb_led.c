@@ -60,8 +60,6 @@ void rgb_led_update(mzapo_rgb_led_t *rgb_led) {
       struct timespec set_time = rgb_led->states[i].set_time;
       uint32_t diff = (((now.tv_sec - set_time.tv_sec) * 1000) +
                        (now.tv_nsec - set_time.tv_nsec) / 1000000);
-      printf("%u\r\n", diff);
-
       if (diff >= rgb_led->states[i].timeout_ms) {
         rgb_led->states[i].timeout_ms = 0;
         rgb_led_clear(rgb_led, i);

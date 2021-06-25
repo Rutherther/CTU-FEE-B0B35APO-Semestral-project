@@ -10,6 +10,10 @@
 #include "mzapo_pheripherals.h"
 #include "text_viewer.h"
 
+#ifdef COMPUTER
+#include "mzapo_sdl.h"
+#endif
+
 typedef enum {
   ERROR_SUCCESS,
   ERROR_NOT_ENOUGH_ARGUMENTS,
@@ -18,6 +22,9 @@ typedef enum {
 } error_t;
 
 int main(int argc, char *argv[]) {
+  #ifdef COMPUTER
+  mzapo_sdl_init();
+  #endif
   struct termios oldstdin;
 
   logger_t logger =
@@ -89,5 +96,8 @@ int main(int argc, char *argv[]) {
   logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
               "Application quit");
 
+#ifdef COMPUTER
+  mzapo_sdl_deinit();
+#endif
   return ERROR_SUCCESS;
 }
