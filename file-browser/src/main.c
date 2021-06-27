@@ -33,9 +33,9 @@
 // options, browser, contextmenu
 // spouštění souborů // 15 - 16
 
-// dokončit dokumentaci a vygenerovat doxygen - 2 HOD 19 - 21
-// pátek - lazení
-// sobota, neděle - zoomování fontu
+// dokončit dokumentaci a vygenerovat doxygen - úterý
+// lazení - ponděli
+// očesat kód - pondělí
 
 typedef enum {
   ERROR_SUCCESS,
