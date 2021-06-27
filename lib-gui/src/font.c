@@ -18,10 +18,11 @@ size2d_t font_measure_text(font_t *font, char *text) {
     .y = font->size
   };
 
+  double scale = (double)font->size / font->font.height;
   size_t len = strlen(text);
   for (int i = 0; i < len; i++) {
     font_character_t character = font_get_character(font, text[i]);
-    size.x += character.width;
+    size.x += character.width * scale;
   }
 
   return size;
@@ -52,9 +53,10 @@ uint16_t font_fit_cut(font_t *font, size2d_t size, char *text) {
   size_t len = strlen(text);
 
   uint16_t x_size = 0;
+  double scale = (double)font->size / font->font.height;
   for (int i = 0; i < len; i++) {
     font_character_t character = font_get_character(font, text[i]);
-    x_size += character.width;
+    x_size += character.width * scale;
 
     if (x_size > size.x) {
       return i;

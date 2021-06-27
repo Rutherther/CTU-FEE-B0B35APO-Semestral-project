@@ -69,9 +69,8 @@ size2d_t renderer_write_string(renderer_t *renderer, uint16_t bx, uint16_t by,
   }
 
   for (int i = 0; i < len; i++) {
-    font_character_t character = font_get_character(font, text[i]);
-    renderer_write_char(renderer, x, y, font, text[i], color);
-    x += character.width + font->char_spacing;
+    size2d_t size = renderer_write_char(renderer, x, y, font, text[i], color);
+    x += size.x;
   }
 
   size2d_t size = {.x = x - bx, .y = font->size + font->line_spacing};
@@ -79,26 +78,49 @@ size2d_t renderer_write_string(renderer_t *renderer, uint16_t bx, uint16_t by,
   return size;
 }
 
-size2d_t renderer_write_char(renderer_t *renderer, uint16_t x, uint16_t y,
+static coords_t renderer_get_char_xy(int64_t x, int64_t y, uint64_t downscale_i, uint64_t convert) {
+  uint16_t px = ((uint64_t)(downscale_i * (2 * x + 1))) /
+                    (convert * 2);
+  uint16_t py = ((uint64_t)(downscale_i * (2 * y + 1))) /
+    (convert * 2);
+
+  coords_t coords = {
+    .x = px,
+    .y = py
+  };
+
+  return coords;
+}
+
+size2d_t renderer_write_char(renderer_t *renderer, uint16_t bx, uint16_t by,
                              font_t *font, char c, display_pixel_t color) {
+  double scale = (double)font->size / font->font.height;
+  double downscale = 1 / scale;
+  uint64_t convert = 10000;
+
+  uint64_t downscale_i = downscale * convert;
+  uint64_t scale_i = scale * convert;
+
   coords_t beg = renderer_get_beg_coords(renderer);
   coords_t end = renderer_get_end_coords(renderer);
 
   font_character_t character = font_get_character(font, c);
-  for (int i = 0; i < font->font.height; i++) {
-    font_bits_t line_bits = character.bits[i]; // line
+  for (int y = 0; y < font->size; y++) {
+    uint16_t py = renderer_get_char_xy(0, y, downscale_i, convert).y;
+    font_bits_t line_bits = character.bits[py]; // line
 
-    for (int j = 0; j < character.width; j++) {
-      bool current = (line_bits >> (8*sizeof(font_bits_t) - j - 1)) & 1;
+    for (int x = 0; x < (character.width * scale_i) / convert; x++) {
+      uint16_t px = renderer_get_char_xy(x, y, downscale_i, convert).x;
+      bool current = (line_bits >> (8*sizeof(font_bits_t) - px - 1)) & 1;
 
-      if (current && coords_is_within(x + j, y + i, beg, end)) {
-        coords_t translated = coords_translate(renderer, x + j, y + i);
+      if (current && coords_is_within(bx + x, by + y, beg, end)) {
+        coords_t translated = coords_translate(renderer, bx + x, by + y);
         display_set_pixel(renderer->display, translated.x, translated.y, color);
       }
     }
   }
 
-  size2d_t size = {.x = character.width + font->char_spacing,
+  size2d_t size = {.x = (character.width * scale_i) / convert + font->char_spacing,
                    .y = font->size + font->line_spacing};
   return size;
 }
