@@ -39,17 +39,36 @@ typedef enum {
   CONT_ONE,
 } container_type_t;
 
-typedef bool (*render_item)(void *state, uint32_t index, renderer_t *renderer, int16_t beg_x, int16_t beg_y);
+/**
+ * @brief Summary
+ * @details Description
+ * @param[inout] state
+ * @param[in] index Index of the item to render
+ * @param[out] renderer
+ * @param[in] beg_x Begin x coordinate
+ * @param[in] beg_y Begin y coordinate
+ * @return Whether item was rendered
+ */
+typedef bool (*render_item)(void *state, uint32_t index, renderer_t *renderer, int16_t beg_x, int16_t beg_y, display_pixel_t foreground);
 
 typedef struct {
   void *state;
   render_item render_item_fn;
   render_item render_header_fn;
   uint32_t items_count;
+  uint32_t selected_index;
   uint16_t item_height;
 
-  int16_t scroll_x;
-  int16_t scroll_y;
+  int32_t scroll_x;
+  int32_t scroll_y;
+
+  display_pixel_t regular_foreground;
+  display_pixel_t regular_background;
+
+  display_pixel_t selected_foreground;
+  display_pixel_t selected_background;
+
+  uint16_t item_padding;
 } list_container_t;
 
 typedef struct {
@@ -310,16 +329,60 @@ void gui_group_container_render(gui_t *gui, container_t *container);
 void gui_group_container_update(gui_t *gui, container_t *container);
 
 // list_container.c
+
+/**
+ * @brief Create list container
+ *
+ * @param[inout] state Custom state of items to pass to render function
+ * @param[in] items_count Count of items to show
+ * @param[in] item_height The height of item
+ * @param[in] render_it Function to render item
+ * @param[in] render_header Function to render header
+ * @return Container with list data
+ */
 container_t gui_list_container_create(void *state, uint32_t items_count,
                                       uint16_t item_height,
                                       render_item render_it,
                                       render_item render_header);
 
+/**
+ * @brief Get current selected index based on scroll
+ *
+ * @param[inout] container
+ * @return Current selected index
+ */
+uint32_t gui_list_get_selected_index(container_t *container);
+
+/**
+ * @brief Scroll list container by x, y
+ * @details Increase scroll coordinates by x, y so different view arrea is shown
+ * @param[inout] container
+ * @param[in] x x coordinate
+ * @param[in] y y coordinate
+ */
 void gui_list_scroll(container_t *container, int16_t x, int16_t y);
+
+/**
+ * @brief List container set new state
+ *
+ * @param[inout] container
+ * @param[out] state Custom state of items
+ * @param[in] items_count The count of items
+ * @return Whether the state was set correctly
+ */
 bool gui_list_container_set_state(container_t *container, void *state,
                                   uint32_t items_count);
+
+/**
+ * @brief List container set new item height
+ *
+ * @param[inout] container
+ * @param[in] item_height The height of item
+ * @return Whether the item was set correctly
+ */
 bool gui_list_container_set_item_height(container_t *container,
                                         uint16_t item_height);
+
 bool gui_list_container_set_render_function(container_t *container,
                                             render_item render_it,
                                             render_item render_header);

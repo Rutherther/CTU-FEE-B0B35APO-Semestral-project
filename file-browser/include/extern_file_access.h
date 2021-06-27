@@ -3,7 +3,24 @@
 
 #include "file_access.h"
 
-fileaccess_state_t extern_fileaccess_init_state(void *data);
+/**
+ * @brief Initialize extern fileaccess state with given path to device
+ * 
+ * @param data path to device 
+ * @return fileaccess_state_t 
+ */
+fileaccess_state_t extern_fileaccess_init_state(void *device);
+
+/**
+ * @brief Deinitialize extern fileaccess state
+ * 
+ * All allocated memory for the state will be freed and
+ * associated device unmounted so it can be ejected
+ * 
+ * @param state 
+ * @return true Everything was cleaned
+ * @return false Could not clean everything
+ */
 bool extern_fileaccess_deinit_state(fileaccess_state_t state);
 
 directory_or_error_t extern_fileaccess_directory_list(fileaccess_state_t state,
