@@ -203,12 +203,30 @@ static void command_handler_full_scroll(void *state, int amount) {
 }
 
 static void command_handler_zoom_in(void *state, int amount) {
-  multiline_text_t* text = (multiline_text_t*) ((component_t*)state)->state;
-  text->font->size += amount > 0 ? 1 : -1;
+  component_t *component = (component_t *)state;
+  multiline_text_t* text = (multiline_text_t*) (component)->state;
+  uint16_t old_size = text->font->size;
+
+  amount = amount > 1 ? 1 : -1;
+  text->font->size += amount;
+
+  component->y += amount * (component->y / (old_size + text->font->line_spacing));
 }
 
 static void command_handler_zoom_out(void *state, int amount) {
   command_handler_zoom_in(state, -amount);
+}
+
+static void command_handler_zoom_reset(void *state, int amount) {
+  component_t *component = (component_t *)state;
+  multiline_text_t *text = (multiline_text_t *)(component)->state;
+  uint16_t old_size = text->font->size;
+  text->font->size = text->font->font.height;
+
+
+  amount = text->font->size - old_size;
+  component->y +=
+      amount * (component->y / (old_size + text->font->line_spacing));
 }
 
 component_t gui_text_view_create(gui_t *gui, multiline_text_t *text, int16_t x,
@@ -234,6 +252,8 @@ void gui_text_view_register_commands(gui_t *gui, component_t *text_view) {
                     text_view);
   commands_register(gui->commands, IN_KEYBOARD, 't',
                     command_handler_full_scroll, text_view);
+  commands_register(gui->commands, IN_KEYBOARD, 'f',
+                    command_handler_zoom_reset, text_view);
 
   commands_register(gui->commands, IN_ENCODER_ROTATE,
                     ROTATION_ENCODER_HORIZONTAL, command_handler_move_right,
