@@ -2,16 +2,20 @@
 #include <stdio.h>
 
 #include "file_browser.h"
+#include "font.h"
 #include "logger.h"
-#include "serialize_lock.h"
-#include "mzapo_sdl.h"
 #include "mzapo_pheripherals.h"
 #include "nonblocking_io.h"
-#include "font.h"
+#include "serialize_lock.h"
+
+#ifdef COMPUTER
+#include "mzapo_sdl.h"
+#endif
 
 // soubory otvírat podle mime typů - config s mime typy a přiřazeným editorem
 // pokud nic nevyhovuje a je spustitelný, tak spustit
-// pokud neplatí ani jedno, otevřít v text vieweru - ten schovat pod mime type text, který bude default
+// pokud neplatí ani jedno, otevřít v text vieweru - ten schovat pod mime type
+// text, který bude default
 
 // TODO: okna
 //   initial - lokální fs nebo nějaký unmounted
