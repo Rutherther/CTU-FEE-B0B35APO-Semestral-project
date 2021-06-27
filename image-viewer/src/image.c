@@ -84,11 +84,6 @@ static void image_write_downscale(image_t *image, display_t *display,
   uint16_t w = region.width, h = region.height;
   uint16_t sw = (uint16_t)(scale_factor * w), sh = (uint16_t)(scale_factor * h);
 
-  unsigned long avg_range = ((unsigned long)downscale_factor);
-  if (scale_factor - avg_range >= 0.5) {
-    avg_range++;
-  }
-
   uint16_t beg_x = (display_region.width - sw) / 2 + display_region.x;
   uint16_t beg_y = (display_region.height - sh) / 2 + display_region.y;
 
