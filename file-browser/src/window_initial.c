@@ -114,6 +114,7 @@ static void *initial_window_construct(window_t *window, void *state) {
   istate->click_state.container = istate->list_container;
   istate->click_state.state = state;
   istate->click_state.clicked = initial_window_item_clicked;
+  istate->click_state.font = &istate->font;
   istate->click_state.gui = istate->gui;
   istate->click_state.window = window;
 

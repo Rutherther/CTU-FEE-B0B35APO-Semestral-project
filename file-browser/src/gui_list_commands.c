@@ -13,6 +13,22 @@ static void command_handler_gui_list_clicked(void *state, int amount) {
   }
 }
 
+static void command_handler_zoom_in(void *state,
+                                 int amount) {
+  gui_list_command_state_t *click_state = (gui_list_command_state_t *)state;
+  if (click_state->window == click_state->gui->active_window &&
+      click_state->font != NULL && amount != 0) {
+    click_state->font->size += amount > 0 ? 1 : -1;
+    gui_list_container_set_item_height(click_state->container,
+                                       click_state->font->size);
+  }
+}
+
+static void command_handler_zoom_out(void *state,
+                                    int amount) {
+  command_handler_zoom_in(state, -amount);
+}
+
 static void command_handler_move(void *state, direction_t direction, int amount) {
   gui_list_command_state_t *click_state = (gui_list_command_state_t *)state;
   if (click_state->window == click_state->gui->active_window) {
@@ -54,4 +70,13 @@ void gui_list_commands_register(commands_t *commands, gui_list_command_state_t *
                     command_handler_move_right, state);
   commands_register(commands, IN_ENCODER_ROTATE, ROTATION_ENCODER_VERTICAL,
                     command_handler_move_down, state);
+
+  if (state->font != NULL) {
+    commands_register(commands, IN_KEYBOARD, KEYBOARD_ZOOM_IN,
+                      command_handler_zoom_in, state);
+    commands_register(commands, IN_KEYBOARD, KEYBOARD_ZOOM_OUT,
+                      command_handler_zoom_out, state);
+    commands_register(commands, IN_ENCODER_ROTATE, ROTATION_ENCODER_ZOOM,
+                      command_handler_zoom_in, state);
+  }
 }

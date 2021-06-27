@@ -11,6 +11,8 @@ typedef struct {
   void *state;
   container_t *container;
 
+  font_t *font;
+
   gui_t *gui;
   window_t *window;
 } gui_list_command_state_t;
