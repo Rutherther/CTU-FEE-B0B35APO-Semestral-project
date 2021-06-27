@@ -173,3 +173,12 @@ int16_t commands_check_input(commands_t * commands) {
 
   return commands_executed;
 }
+
+uint16_t commands_save_state(commands_t *commands) {
+  return commands->count;
+}
+
+bool commands_restore_state(commands_t *commands, uint16_t state) {
+  commands->count = state; // any destruction is not needed as everything is on stack and will be rewritten by new commands
+  return true;
+}
