@@ -25,6 +25,9 @@ container_t gui_container_info_create(gui_container_info_t info, component_t *co
   case CONT_GROUP:
     return gui_group_container_create(0, 0, components, components_count);
   }
+
+  // TODO: figure out what to dO
+  return gui_one_container_create(0, 0);
 }
 
 void gui_container_info_init(container_t *container, void *state,
