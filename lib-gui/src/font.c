@@ -13,29 +13,41 @@ uint32_t font_get_real_char(char *text, uint16_t *bytes) {
     *bytes = 2;
   }
 
-  if ((*text & 0xE0) == 0xE0 && (*text & 0x10) == 0) {
+  else if ((*text & 0xE0) == 0xE0 && (*text & 0x10) == 0) {
     first_byte_offset = 4;
     *bytes = 3;
   }
 
-  if ((*text & 0xF0) == 0xF0 && (*text & 0x8) == 0) {
+  else if ((*text & 0xF0) == 0xF0 && (*text & 0x8) == 0) {
     first_byte_offset = 5;
     *bytes = 4;
   }
 
-  uint32_t result = ((*text) << first_byte_offset) >> first_byte_offset;
+  else {
+    *bytes = 1;
+    return (uint8_t)*(uint8_t*)text;
+  }
+
+  uint32_t result = 0;
+  result |= *(uint8_t*)text;
+  uint32_t mask = 0;
+
+  for (int i = 0; i < 7 - first_byte_offset; i++) {
+    mask |= 1 << i;
+  }
+  result &= mask;
 
   for (int i = 1; i < *bytes; i++) {
     result <<= 6;
-    char current = *(text + i);
+    uint8_t current = *(text + i);
 
     if ((current & 0x80) != 0x80 || (current & 0x40)) {
       // malformed or no unicode, abort
       *bytes = 1;
-      return *text;
+      return (uint8_t)*(uint8_t*)text;
     }
 
-    result |= ((current >> 2) << 2);
+    result |= current & 0x3F;
   }
 
   return result;  

@@ -65,7 +65,8 @@ int main(int argc, char *argv[]) {
 
   mzapo_pheripherals_t pheripherals = mzapo_pheripherals_create(&ledstrip, &rgb_leds, &display, &knobs);
 
-  font_t font = font_create(font_rom8x16);
+  font_t font = font_create(font_wTahoma_40);
+  font.size = 16;
   font.char_spacing = 2;
 
   text_viewer_t text_viewer = text_viewer_create(argv[1], pheripherals, &logger, font);

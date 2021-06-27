@@ -106,7 +106,7 @@ void gui_text_view_render(container_t *container, component_t *component,
   component->y = y_offset;
 
   int16_t first_line_index = -y_offset / (font->size + font->line_spacing);
-  int16_t lines_count = gui->size.y / font->size;
+  int16_t lines_count = gui->size.y / font->size + 1;
   if (first_line_index < 0) {
     first_line_index = 0;
   }

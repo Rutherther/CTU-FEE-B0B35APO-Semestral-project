@@ -68,10 +68,11 @@ size2d_t renderer_write_string(renderer_t *renderer, uint16_t bx, uint16_t by,
     len = length;
   }
 
-  for (int i = 0; i < len && *text != '\0'; i++) {
+  for (int i = 0; i < len && (uint8_t)*(text) != '\0'; i++) {
     uint16_t bytes;
     uint32_t c = font_get_real_char(text, &bytes);
     text += bytes;
+    i += bytes - 1;
 
     size2d_t size = renderer_write_char(renderer, x, y, font, c, color);
     x += size.x;
@@ -109,13 +110,17 @@ size2d_t renderer_write_char(renderer_t *renderer, uint16_t bx, uint16_t by,
   coords_t end = renderer_get_end_coords(renderer);
 
   font_character_t character = font_get_character(font, c);
-  for (int y = 0; y < font->size; y++) {
-    uint16_t py = renderer_get_char_xy(0, y, downscale_i, convert).y;
-    font_bits_t line_bits = character.bits[py]; // line
+  uint32_t one_char_mem =
+      (character.width + sizeof(font_bits_t) * 8 - 1) / (sizeof(font_bits_t) * 8);
 
+  for (int y = 0; y < font->size; y++) {
     for (int x = 0; x < (character.width * scale_i) / convert; x++) {
-      uint16_t px = renderer_get_char_xy(x, y, downscale_i, convert).x;
-      bool current = (line_bits >> (8*sizeof(font_bits_t) - px - 1)) & 1;
+      coords_t pcoords = renderer_get_char_xy(x, y, downscale_i, convert);
+      uint16_t py = pcoords.y, px = pcoords.x;
+      font_bits_t line_bits = character.bits[py*one_char_mem + px/(8*sizeof(font_bits_t))];
+
+      uint16_t offset = 8 * sizeof(font_bits_t) - (px % (sizeof(font_bits_t)*8))- 1;
+      bool current = (line_bits >> (offset)) & 1;
 
       if (current && coords_is_within(bx + x, by + y, beg, end)) {
         coords_t translated = coords_translate(renderer, bx + x, by + y);

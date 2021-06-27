@@ -111,5 +111,6 @@ uint16_t font_fit_cut(font_t *font, size2d_t size, char *text);
 
 extern font_descriptor_t font_rom8x16;
 extern font_descriptor_t font_winFreeSystem14x16;
+extern font_descriptor_t font_wTahoma_40;
 
 #endif // __FONT_H__
