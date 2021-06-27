@@ -1,31 +1,29 @@
 #include "text_viewer.h"
+#include "direction.h"
 #include "display_utils.h"
 #include "gui.h"
 #include "gui_component_line.h"
+#include "gui_component_text.h"
+#include "gui_component_text_view.h"
 #include "input.h"
+#include "keyboard_const.h"
 #include "mzapo_led_strip.h"
 #include "mzapo_rgb_led.h"
 #include "renderer.h"
+#include "rotation_const.h"
 #include <errno.h>
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "gui_component_text.h"
-#include "gui_component_text_view.h"
-#include "direction.h"
-#include "keyboard_const.h"
-#include "rotation_const.h"
 #include <string.h>
-#include <libgen.h>
 
 text_viewer_t text_viewer_create(char *path, mzapo_pheripherals_t pheripherals,
                                  logger_t *logger, font_t font) {
-  text_viewer_t text_viewer = {
-      .pheripherals = pheripherals,
-      .multiline_text = NULL,
-      .path = path,
-      .logger = logger,
-      .font = font
-  };
+  text_viewer_t text_viewer = {.pheripherals = pheripherals,
+                               .multiline_text = NULL,
+                               .path = path,
+                               .logger = logger,
+                               .font = font};
 
   return text_viewer;
 }
@@ -67,9 +65,9 @@ file_error_t text_viewer_load_file(text_viewer_t *text_viewer) {
 
   long read = 0;
   const int perc = 5;
-  const int iters = 100/perc;
+  const int iters = 100 / perc;
   for (int i = 0; i < iters; i++) {
-    long to_read = fsize/iters;
+    long to_read = fsize / iters;
     if (to_read == 0) {
       i = iters - 1;
     }
@@ -82,7 +80,7 @@ file_error_t text_viewer_load_file(text_viewer_t *text_viewer) {
       break;
     }
 
-    long result = fread(data+read, sizeof(char), to_read, file);
+    long result = fread(data + read, sizeof(char), to_read, file);
     read += result;
 
     if (result != to_read) {
@@ -90,12 +88,13 @@ file_error_t text_viewer_load_file(text_viewer_t *text_viewer) {
       return FILER_CANNOT_READ;
     }
 
-    ledstrip_progress_bar_step(text_viewer->pheripherals.ledstrip, i*perc);
+    ledstrip_progress_bar_step(text_viewer->pheripherals.ledstrip, i * perc);
   }
 
   fclose(file);
 
-  multiline_text_t *text = gui_multiline_text_create(&text_viewer->font, WHITE_PIXEL, data);
+  multiline_text_t *text =
+      gui_multiline_text_create(&text_viewer->font, WHITE_PIXEL, data);
   if (text == NULL) {
     return FILER_UNKNOWN;
   }
@@ -110,23 +109,27 @@ static void text_viewer_init_gui(text_viewer_t *text_viewer,
                                  commands_t *commands, renderer_t *renderer) {
   gui_t gui = gui_create(text_viewer->logger, commands, renderer,
                          &text_viewer->pheripherals);
- 
+
   text_viewer->gui = gui;
 }
 
 static void command_handle_exit(void *state, int amount) {
-  text_viewer_t *text_viewer = (text_viewer_t*)state;
+  text_viewer_t *text_viewer = (text_viewer_t *)state;
   text_viewer->running = false;
 }
 
-static void text_viewer_register_commands(text_viewer_t *text_viewer, commands_t *commands) {
+static void text_viewer_register_commands(text_viewer_t *text_viewer,
+                                          commands_t *commands) {
   commands_register(commands, IN_KEYBOARD, 'e', command_handle_exit,
                     text_viewer);
   commands_register(commands, IN_ENCODER_CLICK, 0, command_handle_exit,
                     text_viewer);
 }
 
-static container_t *text_viewer_gui_add_name_and_line(text_viewer_t *text_viewer, window_t *window, text_t *name_text, component_t *name_and_line_components) {
+static container_t *
+text_viewer_gui_add_name_and_line(text_viewer_t *text_viewer, window_t *window,
+                                  text_t *name_text,
+                                  component_t *name_and_line_components) {
   container_t name_and_line =
       gui_group_container_create(0, 0, name_and_line_components, 2);
 
@@ -136,7 +139,8 @@ static container_t *text_viewer_gui_add_name_and_line(text_viewer_t *text_viewer
 
   name_and_line.width = text_viewer->gui.size.x;
   name_and_line.height = name.height + line.height + 3;
-  container_t *name_and_line_ptr = gui_window_add_container(window, name_and_line);
+  container_t *name_and_line_ptr =
+      gui_window_add_container(window, name_and_line);
 
   gui_group_container_add_component(name_and_line_ptr, name);
   gui_group_container_add_component(name_and_line_ptr, line);
@@ -144,7 +148,8 @@ static container_t *text_viewer_gui_add_name_and_line(text_viewer_t *text_viewer
   return name_and_line_ptr;
 }
 
-static container_t *text_viewer_gui_add_view_container(text_viewer_t *text_viewer, container_t *name_and_line, window_t *window) {
+static container_t *text_viewer_gui_add_view_container(
+    text_viewer_t *text_viewer, container_t *name_and_line, window_t *window) {
   container_t text_view_container =
       gui_one_container_create(0, name_and_line->y + name_and_line->height + 2);
 
@@ -155,15 +160,17 @@ static container_t *text_viewer_gui_add_view_container(text_viewer_t *text_viewe
   return gui_window_add_container(window, text_view_container);
 }
 
-static component_t *text_viewer_gui_add_text_view(text_viewer_t *text_viewer, container_t *view_container) {
+static component_t *text_viewer_gui_add_text_view(text_viewer_t *text_viewer,
+                                                  container_t *view_container) {
   component_t text_view = gui_text_view_create(
       &text_viewer->gui, text_viewer->multiline_text, 0, 0);
 
   return gui_one_container_set_component(view_container, text_view);
 }
 
-static void command_handler_move(void *state, direction_t direction, int amount) {
-  component_t *text_view = (component_t*)state;
+static void command_handler_move(void *state, direction_t direction,
+                                 int amount) {
+  component_t *text_view = (component_t *)state;
   if (text_view->focused) {
     int32_t x = 0;
     int32_t y = 0;
@@ -188,16 +195,17 @@ static void command_handler_move_right(void *state, int amount) {
 }
 
 static void command_handler_reset(void *state, int amount) {
-  gui_text_view_reset_scroll((component_t*)state);
+  gui_text_view_reset_scroll((component_t *)state);
 }
 
 static void command_handler_full_scroll(void *state, int amount) {
   gui_text_view_full_scroll((component_t *)state);
 }
 
-component_t gui_text_view_create(gui_t *gui, multiline_text_t *text, int16_t x, int16_t y) {
-  component_t text_view =
-      gui_component_create(x, y, 1, 1, gui_text_view_render, gui_text_view_update);
+component_t gui_text_view_create(gui_t *gui, multiline_text_t *text, int16_t x,
+                                 int16_t y) {
+  component_t text_view = gui_component_create(x, y, 1, 1, gui_text_view_render,
+                                               gui_text_view_update);
   text_view.state = text;
   text_view.focusable = true;
 
@@ -213,8 +221,8 @@ void gui_text_view_register_commands(gui_t *gui, component_t *text_view) {
                     command_handler_move_down, text_view);
   commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_UP,
                     command_handler_move_up, text_view);
-  commands_register(gui->commands, IN_KEYBOARD, 'r',
-                    command_handler_reset, text_view);
+  commands_register(gui->commands, IN_KEYBOARD, 'r', command_handler_reset,
+                    text_view);
   commands_register(gui->commands, IN_KEYBOARD, 't',
                     command_handler_full_scroll, text_view);
 
@@ -222,9 +230,8 @@ void gui_text_view_register_commands(gui_t *gui, component_t *text_view) {
                     ROTATION_ENCODER_HORIZONTAL, command_handler_move_right,
                     text_view);
 
-  commands_register(gui->commands, IN_ENCODER_ROTATE,
-                    ROTATION_ENCODER_VERTICAL, command_handler_move_down,
-                    text_view);
+  commands_register(gui->commands, IN_ENCODER_ROTATE, ROTATION_ENCODER_VERTICAL,
+                    command_handler_move_down, text_view);
 
   commands_register(gui->commands, IN_ENCODER_CLICK, ROTATION_ENCODER_VERTICAL,
                     command_handler_reset, text_view);
@@ -260,8 +267,7 @@ void text_viewer_start_loop(text_viewer_t *text_viewer) {
 
   gui_set_active_window(&text_viewer->gui, &text_viewer_window);
 
-  gui_text_view_register_commands(&text_viewer->gui,
-                                  text_view);
+  gui_text_view_register_commands(&text_viewer->gui, text_view);
 
   text_viewer_register_commands(text_viewer, &commands);
 
@@ -276,11 +282,18 @@ void text_viewer_start_loop(text_viewer_t *text_viewer) {
     rgb_led_update(text_viewer->pheripherals.rgb_leds);
 
     uint32_t lines_scrolled = gui_text_view_get_lines_scrolled(text_view);
-    ledstrip_turn_on(text_viewer->pheripherals.ledstrip,
-                     ((double) lines_scrolled /
-                      text_viewer->multiline_text->lines_count) *
-                         LED_STRIP_COUNT,
-                     1);
+    int32_t ledstrip_index =
+        ((double)lines_scrolled /
+         (text_viewer->multiline_text->lines_count -
+          text_viewer->gui.size.y /
+              (text_viewer->multiline_text->font->size +
+               text_viewer->multiline_text->font->line_spacing))) *
+        LED_STRIP_COUNT;
+    if (ledstrip_index > LED_STRIP_COUNT - 1) {
+      ledstrip_index = LED_STRIP_COUNT - 1;
+    }
+
+    ledstrip_turn_on(text_viewer->pheripherals.ledstrip, ledstrip_index, 1);
 
     if (lines_scrolled != prev_lines_scrolled) {
       rgb_led_set_timeout(text_viewer->pheripherals.rgb_leds, LED_LEFT, 0, 100,
