@@ -112,7 +112,8 @@ void renderer_render_rectangle(renderer_t *renderer, uint16_t bx, uint16_t by,
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
       if (coords_is_within(bx + x, by + y, beg, end)) {
-        display_set_pixel(renderer->display, bx + x, by + y, color);
+        display_set_pixel(renderer->display, bx + x + renderer->translate_x,
+                          by + y + renderer->translate_y, color);
       }
     }
   }
