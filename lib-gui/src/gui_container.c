@@ -7,7 +7,7 @@ void gui_container_render(gui_t *gui, container_t *container) {
 
   switch (container->type) {
   case CONT_TABLE:
-    // TODO: implement
+    gui_list_container_render(gui, container);
     break;
   case CONT_GROUP:
     gui_group_container_render(gui, container);
@@ -23,7 +23,7 @@ void gui_container_render(gui_t *gui, container_t *container) {
 void gui_container_update(gui_t *gui, container_t *container) {
   switch (container->type) {
   case CONT_TABLE:
-    // TODO: implement
+    gui_list_container_update(gui, container);
     break;
   case CONT_GROUP:
     gui_group_container_update(gui, container);
