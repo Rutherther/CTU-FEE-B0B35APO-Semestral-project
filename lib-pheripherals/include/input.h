@@ -43,8 +43,8 @@ typedef struct {
 
 typedef struct {
   command_t *commands;
-  uint8_t count;
-  uint8_t size;
+  uint16_t count;
+  uint16_t size;
 
   rotation_encoders_t encoders;
 } commands_t;
@@ -95,5 +95,9 @@ bool commands_unregister(commands_t *commands, command_t *command);
  * @return short number of commands called or -1 in case of an error
  */
 short commands_check_input(commands_t *commands);
+
+uint16_t commands_save_state(commands_t *commands);
+
+bool commands_restore_state(commands_t *commands, uint16_t state);
 
 #endif // __INPUT_H__
