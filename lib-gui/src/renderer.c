@@ -101,7 +101,7 @@ size2d_t renderer_write_char(renderer_t *renderer, uint16_t bx, uint16_t by,
                              font_t *font, uint32_t c, display_pixel_t color) {
   double scale = (double)font->size / font->font.height;
   double downscale = 1 / scale;
-  uint64_t convert = 10000;
+  uint64_t convert = 100000;
 
   uint64_t downscale_i = downscale * convert;
   uint64_t scale_i = scale * convert;
