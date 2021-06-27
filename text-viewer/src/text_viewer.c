@@ -202,6 +202,15 @@ static void command_handler_full_scroll(void *state, int amount) {
   gui_text_view_full_scroll((component_t *)state);
 }
 
+static void command_handler_zoom_in(void *state, int amount) {
+  multiline_text_t* text = (multiline_text_t*) ((component_t*)state)->state;
+  text->font->size += amount > 0 ? 1 : -1;
+}
+
+static void command_handler_zoom_out(void *state, int amount) {
+  command_handler_zoom_in(state, -amount);
+}
+
 component_t gui_text_view_create(gui_t *gui, multiline_text_t *text, int16_t x,
                                  int16_t y) {
   component_t text_view = gui_component_create(x, y, 1, 1, gui_text_view_render,
@@ -230,6 +239,14 @@ void gui_text_view_register_commands(gui_t *gui, component_t *text_view) {
                     ROTATION_ENCODER_HORIZONTAL, command_handler_move_right,
                     text_view);
 
+  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_ZOOM_IN,
+                    command_handler_zoom_in, text_view);
+  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_ZOOM_OUT,
+                    command_handler_zoom_out, text_view);
+
+  commands_register(gui->commands, IN_ENCODER_ROTATE, ROTATION_ENCODER_ZOOM,
+                    command_handler_zoom_in, text_view);
+
   commands_register(gui->commands, IN_ENCODER_ROTATE, ROTATION_ENCODER_VERTICAL,
                     command_handler_move_down, text_view);
 
@@ -253,7 +270,8 @@ void text_viewer_start_loop(text_viewer_t *text_viewer) {
 
   // name and line
   component_t name_and_line_components[2];
-  text_t name_text = {.font = &text_viewer->font,
+  font_t text_viewer_font_copy = text_viewer->font;
+  text_t name_text = {.font = &text_viewer_font_copy,
                       .line = basename(text_viewer->path),
                       .color = WHITE_PIXEL};
   container_t *name_and_line = text_viewer_gui_add_name_and_line(
@@ -285,7 +303,7 @@ void text_viewer_start_loop(text_viewer_t *text_viewer) {
     int32_t ledstrip_index =
         ((double)lines_scrolled /
          (text_viewer->multiline_text->lines_count -
-          text_viewer->gui.size.y /
+          (double)text_viewer->gui.size.y /
               (text_viewer->multiline_text->font->size +
                text_viewer->multiline_text->font->line_spacing))) *
         LED_STRIP_COUNT;

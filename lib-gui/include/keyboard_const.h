@@ -2,3 +2,5 @@
 #define KEYBOARD_RIGHT 'l'
 #define KEYBOARD_DOWN 'j'
 #define KEYBOARD_UP 'k'
+#define KEYBOARD_ZOOM_IN 'z'
+#define KEYBOARD_ZOOM_OUT 'x'
