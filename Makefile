@@ -85,6 +85,7 @@ clean:
 	@make -C file-browser clean
 	@make -C lib-pheripherals clean
 	@make -C lib-gui clean
+	@make -C mzapo-sdl clean
 	$(RM) -rf $(BIN_DIR)
 	$(RM) -rf ./.computer ./.arm
 
