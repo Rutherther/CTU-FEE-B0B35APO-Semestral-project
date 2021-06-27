@@ -209,6 +209,9 @@ static void command_handler_zoom_in(void *state, int amount) {
 
   amount = amount > 1 ? 1 : -1;
   text->font->size += amount;
+  if (text->font->size == 0) {
+    text->font->size = 1;
+  }
 
   component->y += amount * (component->y / (old_size + text->font->line_spacing));
 }
