@@ -68,8 +68,12 @@ size2d_t renderer_write_string(renderer_t *renderer, uint16_t bx, uint16_t by,
     len = length;
   }
 
-  for (int i = 0; i < len; i++) {
-    size2d_t size = renderer_write_char(renderer, x, y, font, text[i], color);
+  for (int i = 0; i < len && *text != '\0'; i++) {
+    uint16_t bytes;
+    uint32_t c = font_get_real_char(text, &bytes);
+    text += bytes;
+
+    size2d_t size = renderer_write_char(renderer, x, y, font, c, color);
     x += size.x;
   }
 
@@ -93,7 +97,7 @@ static coords_t renderer_get_char_xy(int64_t x, int64_t y, uint64_t downscale_i,
 }
 
 size2d_t renderer_write_char(renderer_t *renderer, uint16_t bx, uint16_t by,
-                             font_t *font, char c, display_pixel_t color) {
+                             font_t *font, uint32_t c, display_pixel_t color) {
   double scale = (double)font->size / font->font.height;
   double downscale = 1 / scale;
   uint64_t convert = 10000;

@@ -1,48 +1,123 @@
 #include "font.h"
 #include <string.h>
+#include <stdio.h>
+static bool font_descriptor_contains_character(font_descriptor_t **descriptor,
+                                               uint32_t c);
+
+uint32_t font_get_real_char(char *text, uint16_t *bytes) {
+  *bytes = 1;
+  uint8_t first_byte_offset = 0;
+
+  if ((*text & 0xC0) == 0xC0 && (*text & 0x20) == 0) {
+    first_byte_offset = 3;
+    *bytes = 2;
+  }
+
+  if ((*text & 0xE0) == 0xE0 && (*text & 0x10) == 0) {
+    first_byte_offset = 4;
+    *bytes = 3;
+  }
+
+  if ((*text & 0xF0) == 0xF0 && (*text & 0x8) == 0) {
+    first_byte_offset = 5;
+    *bytes = 4;
+  }
+
+  uint32_t result = ((*text) << first_byte_offset) >> first_byte_offset;
+
+  for (int i = 1; i < *bytes; i++) {
+    result <<= 6;
+    char current = *(text + i);
+
+    if ((current & 0x80) != 0x80 || (current & 0x40)) {
+      // malformed or no unicode, abort
+      *bytes = 1;
+      return *text;
+    }
+
+    result |= ((current >> 2) << 2);
+  }
+
+  return result;  
+}
 
 font_t font_create(font_descriptor_t descriptor) {
   font_t font = {
-    .font = descriptor,
-    .size = descriptor.height,
-    .char_spacing = 0,
-    .line_spacing = 0,
+      .font = descriptor,
+      .size = descriptor.height,
+      .char_spacing = 0,
+      .line_spacing = 0,
   };
 
   return font;
 }
 
 size2d_t font_measure_text(font_t *font, char *text) {
-  size2d_t size = {
-    .x = 0,
-    .y = font->size
-  };
+  size2d_t size = {.x = 0, .y = font->size};
 
   double scale = (double)font->size / font->font.height;
   size_t len = strlen(text);
-  for (int i = 0; i < len; i++) {
-    font_character_t character = font_get_character(font, text[i]);
+  for (int i = 0; i < len && *text != '\0'; i++) {
+    uint16_t bytes;
+    uint32_t c = font_get_real_char(text, &bytes);
+    text += bytes;
+
+    font_character_t character = font_get_character(font, c);
     size.x += character.width * scale;
   }
 
   return size;
 }
 
-font_character_t font_get_character(font_t *font, char c) {
-  int16_t index = c - font->font.first_char;
-  if (index < 0 || index >= font->font.chars_count) {
-    index = font->font.default_char - font->font.first_char;
+font_character_t font_get_character(font_t *font, uint32_t c) {
+  font_descriptor_t *descriptor = &font->font;
+
+  if (!font_descriptor_contains_character(&descriptor, c)) {
+    return font_get_character(font, font->font.default_char);
   }
 
-  return font->font.chars[index];
+  uint32_t index = c - descriptor->first_char;
+  uint16_t width = descriptor->max_width;
+  if (descriptor->widths != NULL) {
+    width = descriptor->widths[index];
+  }
+
+  uint32_t one_char_width =
+      (width + sizeof(font_bits_t) * 8 - 1) / (sizeof(font_bits_t) * 8);
+  uint32_t offset = (one_char_width * descriptor->height) * (index);
+  if (descriptor->offsets != NULL) {
+    offset = descriptor->offsets[index];
+  }
+
+  font_character_t character = {
+    .width = width, .bits = descriptor->bits + offset};
+  return character;
 }
 
-bool font_contains_character(font_t *font, char c) {
-  return c >= font->font.first_char && c - font->font.first_char < font->font.chars_count;
+static bool font_descriptor_contains_character(font_descriptor_t **descriptor,
+                                               uint32_t c) {
+  if (*descriptor == NULL) {
+    return false;
+  }
+
+  bool contains = c >= (*descriptor)->first_char &&
+                  c - (*descriptor)->first_char < (*descriptor)->chars_count;
+
+  if (!contains) {
+    *descriptor = (*descriptor)->font_next_part;
+    return font_descriptor_contains_character(descriptor, c);
+  }
+
+  return true;
 }
 
-uint16_t font_fit_ellipsis(font_t *font, size2d_t size, char *text,
-                           char *ellipsis) {
+bool font_contains_character(font_t *font, uint32_t c){
+  font_descriptor_t *descriptor = &font->font;
+  return font_descriptor_contains_character(&descriptor, c);
+}
+
+uint16_t
+    font_fit_ellipsis(font_t *font, size2d_t size, char *text, char *ellipsis) {
   uint16_t ellipsis_width = font_measure_text(font, ellipsis).x;
   size.x -= ellipsis_width;
 

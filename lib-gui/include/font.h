@@ -7,11 +7,12 @@
 typedef uint16_t font_bits_t;
 
 typedef struct {
-  const font_bits_t bits[16];
+  const font_bits_t *bits;
   const uint8_t width;
 } font_character_t;
 
-typedef struct {
+typedef struct font_descriptor_t font_descriptor_t;
+struct font_descriptor_t {
   char *name;
 
   uint16_t height;
@@ -19,11 +20,18 @@ typedef struct {
 
   uint16_t first_char;
 
-  uint16_t chars_count;
-  const font_character_t *chars;
+  uint32_t chars_count;
 
-  uint16_t default_char;
-} font_descriptor_t;
+  uint32_t max_width;
+
+  const font_bits_t *bits;
+  const uint32_t *offsets;
+  const unsigned char *widths;
+
+  uint32_t default_char;
+
+  font_descriptor_t* font_next_part;
+};
 
 typedef struct {
   font_descriptor_t font;
@@ -48,6 +56,10 @@ typedef coords_t size2d_t;
  */
 font_t font_create(font_descriptor_t descriptor);
 
+
+uint32_t font_get_real_char(char *text, uint16_t *bytes);
+
+
 /**
  * @brief Get text dimensions for given font 
  * 
@@ -64,7 +76,7 @@ size2d_t font_measure_text(font_t *font, char *text);
  * @param c 
  * @return font_character_t 
  */
-font_character_t font_get_character(font_t *font, char c);
+font_character_t font_get_character(font_t *font, uint32_t c);
 
 /**
  * @brief Get whether font contains font character 
@@ -74,7 +86,7 @@ font_character_t font_get_character(font_t *font, char c);
  * @return true character is in font 
  * @return false character is not in font
  */
-bool font_contains_character(font_t *font, char c);
+bool font_contains_character(font_t *font, uint32_t c);
 
 /**
  * @brief Fit text with ellipsis to get how many characters can be shown

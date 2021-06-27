@@ -66,7 +66,7 @@ size2d_t renderer_write_string(renderer_t *renderer, uint16_t x, uint16_t y,
  * @return size2d_t
  */
 size2d_t renderer_write_char(renderer_t *renderer, uint16_t x, uint16_t y,
-                             font_t *font, char c, display_pixel_t color);
+                             font_t *font, uint32_t c, display_pixel_t color);
 
 /**
  * @brief Render filled rectangle
