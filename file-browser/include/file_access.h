@@ -167,6 +167,7 @@ extern const fileaccess_t
 extern fileaccess_connector_t fileaccess_connectors[(FA_COUNT-1)*FA_COUNT];
 
 void fileaccess_log_error(logger_t *logger, file_operation_error_t error);
+const char *fileaccess_get_error_text(file_operation_error_t error);
 
 fileaccess_state_t fileaccess_init(const fileaccess_t *fileaccess, void *data);
 bool fileaccess_deinit(fileaccess_state_t state);

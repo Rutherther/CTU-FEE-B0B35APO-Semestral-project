@@ -80,8 +80,9 @@ bool window_browser_open(gui_t *gui, font_t *font, fileaccess_state_t state) {
   directory_or_error_t root = fileaccess_root_list(state);
 
   if (root.error) {
-    fileaccess_log_error(gui->logger, root.error);
-    // TODO: dialog
+    fileaccess_log_error(gui->logger, root.payload.error);
+    dialog_info_show(gui, font, "Could not open root directory",
+                     fileaccess_get_error_text(root.payload.error));
     return false;
   }
 
@@ -166,6 +167,7 @@ static void browser_window_item_clicked(container_t *container, void *state,
     file_operation_error_t error = file_open(&current_file, browser_exec_options, bstate->state);
     if (error != FILOPER_SUCCESS) {
       fileaccess_log_error(logger, error);
+      dialog_info_show(bstate->gui, bstate->font, "Could not open file", fileaccess_get_error_text(error));
     } else {
       logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Successfully returned from executing file.");
     }
@@ -175,8 +177,9 @@ static void browser_window_item_clicked(container_t *container, void *state,
 
     directory_or_error_t data = fileaccess_directory_list(bstate->state, new_dir_path);
     if (data.error) {
-      // show error
       fileaccess_log_error(logger, data.payload.error);
+      dialog_info_show(bstate->gui, bstate->font, "Could not open directory",
+                       fileaccess_get_error_text(data.payload.error));
     } else {
       fileaccess_directory_close(bstate->state, bstate->current_directory);
       bstate->current_directory = data.payload.directory;
