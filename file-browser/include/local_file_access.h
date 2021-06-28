@@ -16,6 +16,10 @@ file_operation_error_t local_fileaccess_directory_close(fileaccess_state_t state
 
 file_operation_error_t local_fileaccess_file_get_mime_type(fileaccess_state_t state, file_t *file, char *mime);
 executing_file_or_error_t local_fileaccess_file_execute(fileaccess_state_t state, file_t *file, char *args);
+
+file_operation_error_t local_fileaccess_file_get_local_path(fileaccess_state_t state, file_t *file,
+                                     char *out);
+
 file_operation_error_t local_fileaccess_file_delete(fileaccess_state_t state, char *path);
 
 #endif // __LOCAL_FILE_ACCESS_H__

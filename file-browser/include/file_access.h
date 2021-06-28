@@ -112,6 +112,9 @@ typedef file_operation_error_t (*get_mime_type_fn)(fileaccess_state_t state,
 typedef executing_file_or_error_t (*execute_file_fn)(fileaccess_state_t state,
                                           file_t *file, char *args);
 
+typedef file_operation_error_t (*get_file_local_path_fn)(fileaccess_state_t state,
+                                                     file_t *file, char *out);
+
 typedef file_operation_error_t (*delete_directory_fn)(fileaccess_state_t state,
                                                       char *path);
 typedef file_operation_error_t (*delete_file_fn)(fileaccess_state_t state,
@@ -125,6 +128,8 @@ struct fileaccess_t {
 
   list_directory_fn list_directory;
   list_root_fn list_root;
+
+  get_file_local_path_fn get_file_local_path;
 
   create_directory_fn create_directory;
   close_directory_fn close_directory;
@@ -186,7 +191,7 @@ file_operation_error_t fileaccess_file_get_mimetype(fileaccess_state_t state,
 executing_file_or_error_t fileaccess_file_execute(fileaccess_state_t state, file_t *file,
                                        char *args);
 file_operation_error_t fileaccess_file_delete(fileaccess_state_t state, char *path);
+file_operation_error_t fileaccess_file_get_local_path(fileaccess_state_t state, file_t *file, char *out);
 
 file_operation_error_t file_operation_error_from_errno(int error);
-
 #endif // __FILE_ACCESS_H__

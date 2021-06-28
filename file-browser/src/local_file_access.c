@@ -239,6 +239,13 @@ executing_file_or_error_t local_fileaccess_file_execute(fileaccess_state_t state
   return ret;
 }
 
+file_operation_error_t
+local_fileaccess_file_get_local_path(fileaccess_state_t state, file_t *file,
+                                     char *out) {
+  file_get_full_path(state, file->directory, file, out);
+  return FILOPER_SUCCESS;
+}
+
 file_operation_error_t local_fileaccess_file_delete(fileaccess_state_t state,
                                                     char *path) {
   file_operation_error_t error = FILOPER_SUCCESS;
@@ -266,4 +273,5 @@ const fileaccess_t local_file_access = {
     .deinit = local_fileaccess_deinit_state,
     .get_mime_type = local_fileaccess_file_get_mime_type,
     .execute_file = local_fileaccess_file_execute,
+    .get_file_local_path = local_fileaccess_file_get_local_path
 };

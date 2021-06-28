@@ -137,6 +137,7 @@ const fileaccess_t extern_file_access = {
     .delete_file = extern_fileaccess_file_delete,
     .execute_file = extern_fileaccess_file_execute,
     .get_mime_type = extern_fileaccess_file_get_mime_type,
+    .get_file_local_path = local_fileaccess_file_get_local_path,
 
     .list_directory = extern_fileaccess_directory_list,
     .close_directory = extern_fileaccess_directory_close,

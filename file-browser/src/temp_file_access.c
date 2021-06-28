@@ -21,6 +21,7 @@ const fileaccess_t temp_file_access = {
     .delete_file = local_fileaccess_file_delete,
     .execute_file = local_fileaccess_file_execute,
     .get_mime_type = local_fileaccess_file_get_mime_type,
+    .get_file_local_path = local_fileaccess_file_get_local_path,
 
     .list_directory = local_fileaccess_directory_list,
     .close_directory = local_fileaccess_directory_close,
@@ -28,5 +29,4 @@ const fileaccess_t temp_file_access = {
     .delete_directory = local_fileaccess_directory_delete,
 
     .list_root = local_fileaccess_root_list,
-
 };

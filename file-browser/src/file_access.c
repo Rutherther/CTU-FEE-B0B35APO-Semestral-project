@@ -75,6 +75,11 @@ file_operation_error_t fileaccess_file_delete(fileaccess_state_t state,
   return state.fileaccess->delete_file(state, path);
 }
 
+file_operation_error_t fileaccess_file_get_local_path(fileaccess_state_t state,
+                                                      file_t *file, char *out) {
+  return state.fileaccess->get_file_local_path(state, file, out);
+}
+
 file_operation_error_t file_operation_error_from_errno(int error) {
   switch (error) {
   case EACCES:
