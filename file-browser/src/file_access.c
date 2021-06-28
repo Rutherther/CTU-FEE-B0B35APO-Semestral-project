@@ -2,15 +2,6 @@
 #include "logger.h"
 #include <string.h>
 #include <errno.h>
-/*
-  FILOPER_SUCCESS,
-  FILOPER_PERMISSIONS,
-  FILOPER_DOES_NOT_EXIST,
-  FILOPER_USED,
-  FILOPER_ALREADY_EXISTS,
-  FILOPER_NOT_ENOUGH_SPACE,
-  FILOPER_UNKNOWN,
- */
 
 const char *file_operation_error_strings[] = {
   "Success",
@@ -21,6 +12,10 @@ const char *file_operation_error_strings[] = {
   "Not enough space on device",
   "Unknown error",
 };
+
+const char *fileaccess_get_error_text(file_operation_error_t error) {
+  return file_operation_error_strings[error];
+}
 
 void fileaccess_log_error(logger_t *logger, file_operation_error_t error) {
   logger_error(logger, __FILE__, __FUNCTION__, __LINE__,
