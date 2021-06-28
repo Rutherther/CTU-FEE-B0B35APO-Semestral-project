@@ -32,7 +32,7 @@ font_descriptor_t *font_family_get_descriptor(font_t *font) {
   return font->family->descriptors[nearest_index];
 }
 
-uint32_t font_get_real_char(char *text, uint16_t *bytes) {
+uint32_t font_get_real_char(const char *text, uint16_t *bytes) {
   *bytes = 1;
   uint8_t first_byte_offset = 0;
 
@@ -105,7 +105,7 @@ font_t font_family_create(font_descriptor_t def, font_family_t *family) {
   return font;
 }
 
-size2d_t font_measure_text(font_t *font, char *text) {
+size2d_t font_measure_text(font_t *font, const char *text) {
   size2d_t size = {.x = 0, .y = font->size};
 
   double scale = (double)font->size / font_family_get_descriptor(font)->height;
@@ -170,21 +170,25 @@ bool font_contains_character(font_t *font, uint32_t c){
 }
 
 uint16_t
-    font_fit_ellipsis(font_t *font, size2d_t size, char *text, char *ellipsis) {
+    font_fit_ellipsis(font_t *font, size2d_t size, const char *text, const char *ellipsis) {
   uint16_t ellipsis_width = font_measure_text(font, ellipsis).x;
   size.x -= ellipsis_width;
 
   return font_fit_cut(font, size, text);
 }
 
-uint16_t font_fit_cut(font_t *font, size2d_t size, char *text) {
+uint16_t font_fit_cut(font_t *font, size2d_t size, const char *text) {
   size_t len = strlen(text);
 
   uint16_t x_size = 0;
-  double scale = (double)font->size / font->font.height;
+  double scale = (double)font->size / font_family_get_descriptor(font)->height;
   for (int i = 0; i < len; i++) {
-    font_character_t character = font_get_character(font, text[i]);
-    x_size += character.width * scale;
+    uint16_t bytes = 0;
+    uint32_t c = font_get_real_char(&text[i], &bytes);
+    i += bytes - 1;
+
+    font_character_t character = font_get_character(font, c);
+    x_size += character.width * scale + font->char_spacing;
 
     if (x_size > size.x) {
       return i;

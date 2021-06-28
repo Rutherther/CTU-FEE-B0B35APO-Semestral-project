@@ -66,7 +66,7 @@ font_t font_create(font_descriptor_t descriptor);
 font_t font_family_create(font_descriptor_t def, font_family_t *family);
 font_descriptor_t *font_family_get_descriptor(font_t *font);
 
-uint32_t font_get_real_char(char *text, uint16_t *bytes);
+uint32_t font_get_real_char(const char *text, uint16_t *bytes);
 
 /**
  * @brief Get text dimensions for given font
@@ -75,7 +75,7 @@ uint32_t font_get_real_char(char *text, uint16_t *bytes);
  * @param text
  * @return size2d_t
  */
-size2d_t font_measure_text(font_t *font, char *text);
+size2d_t font_measure_text(font_t *font, const char *text);
 
 /**
  * @brief Get font character for font from char
@@ -105,8 +105,8 @@ bool font_contains_character(font_t *font, uint32_t c);
  * @param ellipsis
  * @return uint16_t number of characters that can be fit
  */
-uint16_t font_fit_ellipsis(font_t *font, size2d_t size, char *text,
-                           char *ellipsis);
+uint16_t font_fit_ellipsis(font_t *font, size2d_t size, const char *text,
+                           const char *ellipsis);
 
 /**
  * @brief Fit cut text without any ellipsis to get how many characters can be
@@ -117,7 +117,7 @@ uint16_t font_fit_ellipsis(font_t *font, size2d_t size, char *text,
  * @param text
  * @return uint16_t
  */
-uint16_t font_fit_cut(font_t *font, size2d_t size, char *text);
+uint16_t font_fit_cut(font_t *font, size2d_t size, const char *text);
 
 extern font_descriptor_t font_rom8x16;
 extern font_descriptor_t font_winFreeSystem14x16;

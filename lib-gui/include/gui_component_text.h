@@ -5,7 +5,7 @@
 #include "gui.h"
 
 typedef struct {
-  char *line;
+  const char *line;
   font_t *font;
   display_pixel_t color;
 } text_t;
