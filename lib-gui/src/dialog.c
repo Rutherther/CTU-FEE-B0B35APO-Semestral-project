@@ -112,7 +112,7 @@ static void *dialog_construct(window_t *window, void *state) {
 
   dstate->dialog_component = gui_one_container_set_component(
       one_container,
-      gui_text_create(&dstate->dialog_text, DIALOG_PADDING, DIALOG_PADDING, DIALOG_WIDTH - 2*DIALOG_PADDING, DIALOG_HEIGHT - one_container->y - DIALOG_PADDING*2));
+      gui_text_create(&dstate->dialog_text, DIALOG_PADDING, DIALOG_PADDING, DIALOG_WIDTH - 2*DIALOG_PADDING, DIALOG_HEIGHT));
 
   // register commands
   commands_register(gui->commands, IN_KEYBOARD, 0, command_handler_close, dstate);
