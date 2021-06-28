@@ -59,7 +59,7 @@ void renderer_render(renderer_t *renderer) {
 }
 
 size2d_t renderer_write_string(renderer_t *renderer, uint16_t bx, uint16_t by,
-                               uint16_t length, font_t *font, char *text,
+                               uint16_t length, font_t *font, const char *text,
                                display_pixel_t color) {
   uint16_t x = bx, y = by;
   size_t len = strlen(text);
@@ -71,6 +71,9 @@ size2d_t renderer_write_string(renderer_t *renderer, uint16_t bx, uint16_t by,
   for (int i = 0; i < len && (uint8_t)*(text) != '\0'; i++) {
     uint16_t bytes;
     uint32_t c = font_get_real_char(text, &bytes);
+    if (c == '\n' || c == '\r') {
+      continue;
+    }
     text += bytes;
     i += bytes - 1;
 
