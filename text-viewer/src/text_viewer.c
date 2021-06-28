@@ -136,7 +136,7 @@ text_viewer_gui_add_name_and_line(text_viewer_t *text_viewer, window_t *window,
   container_t name_and_line =
       gui_group_container_create(0, 0, name_and_line_components, 2);
 
-  component_t name = gui_text_create(name_text, 5, 3, 0, 0);
+  component_t name = gui_text_create(name_text, 5, 3, text_viewer->gui.size.x, 0);
   component_t line = gui_line_create(&WHITE_PIXEL, 0, name.height + name.y,
                                      text_viewer->gui.size.x, 1);
 
