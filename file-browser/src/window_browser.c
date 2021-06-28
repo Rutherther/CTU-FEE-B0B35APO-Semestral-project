@@ -291,7 +291,7 @@ static void browser_window_job(void *state) {
   }
 }
 
-#define KiB 1024LU
+#define KiB 1024ULL
 #define MiB KiB*KiB
 #define GiB KiB*KiB*KiB
 #define TiB KiB*KiB*KiB*KiB
