@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "file_access.h"
 #include "file_browser.h"
+#include "options.h"
 #include "font.h"
 #include "logger.h"
 #include "mzapo_pheripherals.h"
@@ -18,19 +20,22 @@
 // text, který bude default
 
 // TODO: okna
-//   initial - lokální fs nebo nějaký unmounted
-//   browser - ukazuje current složku, v ní soubory a info o nich, nahoře název
-//     složky
-//   contextmenu - ukazuje info o souboru a jeho nabídku na smazání, přesunutí,
+//DONE   initial - lokální fs nebo nějaký unmounted
+//DONE   browser - ukazuje current složku, v ní soubory a info o nich, nahoře název
+//DONE     složky
+//WIP   contextmenu - ukazuje info o souboru a jeho nabídku na smazání, přesunutí,
 //     zkopírování, zobrazení v textovém move/copy - slouží podobně jako initial a
 //     browser, ale k přesunutí nebo
 //     zkopírování objektu
 //   options - nastavení nabídka
 //     mimetypes - jaký mime type otevírá co, defaultně dát jen pár mime types s možností přidat přes stdin (příp. virtuální klávesnici, když zbude čas)
+//   dialog
 
 // TODO: dokončit dokumentaci
 
-// options, browser, contextmenu
+// options, contextmenu
+// TODO: dialog s chybou
+// TODO: seřazení souborů, aby . a .. byly první
 // spouštění souborů // 15 - 16
 
 // dokončit dokumentaci a vygenerovat doxygen - úterý
@@ -40,7 +45,26 @@
 typedef enum {
   ERROR_SUCCESS,
   ERROR_PHERIPHERALS,
+  ERROR_OPTIONS,
 } error_t;
+
+#define OPTIONS_PATH "eoptions.cfg"
+
+void exec_options_create_default() {
+  exec_option_t options_arr[] = {
+      {.mime = "image/png", .program = "./bin/image-viewer"},
+      {.mime = "image/jpeg", .program = "./bin/image-viewer"},
+      {.mime = "image/x-portable-pixmap", .program = "./bin/image-viewer"},
+      {.mime = "image/x-portable-anymap", .program = "./bin/image-viewer"},
+      {.mime = "text", .program = "./bin/text-viewer"},
+  };
+  exec_options_t options = {
+    .options_count = sizeof(options_arr) / sizeof(options_arr[0]),
+    .options = options_arr,
+  };
+
+  exec_options_save(&options, OPTIONS_PATH);
+}
 
 int main(int argc, char *argv[]) {
   #ifdef COMPUTER
@@ -50,6 +74,25 @@ int main(int argc, char *argv[]) {
 
   logger_t logger =
       logger_create(LOG_DEBUG, stdout, stdout, stderr, stderr, NULL);
+
+  exec_options_loader_t loader = exec_options_loader_create(OPTIONS_PATH);
+  file_operation_error_t error = exec_options_loader_get_size(&loader);
+
+  char exec_buffer[loader.bytes_size];
+
+  if (error == FILOPER_SUCCESS) {
+    error = exec_options_loader_load(&loader, exec_buffer);
+  }
+
+  if (error == FILOPER_DOES_NOT_EXIST) {
+    exec_options_create_default();
+  }
+
+  if (error != FILOPER_SUCCESS) {
+    fileaccess_log_error(&logger, error);
+    return ERROR_OPTIONS;
+  }
+  browser_exec_options = loader.exec_options;
 
   /* Try to acquire lock the first */
   if (serialize_lock(1) <= 0) {

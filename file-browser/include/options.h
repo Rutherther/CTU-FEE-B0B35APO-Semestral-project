@@ -29,3 +29,5 @@ file_operation_error_t exec_options_loader_load(exec_options_loader_t *loader, c
 
 file_operation_error_t exec_options_save(exec_options_t *options, char *filename);
 char *exec_options_get_program(exec_options_t *options, char *mime);
+
+extern exec_options_t *browser_exec_options;
