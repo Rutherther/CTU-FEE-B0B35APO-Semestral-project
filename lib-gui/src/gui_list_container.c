@@ -112,7 +112,7 @@ void gui_list_container_render(gui_t *gui, container_t *container) {
       bgcolor = list.selected_background;
     }
 
-    renderer_render_rectangle(gui->renderer, beg_x, y, 1000, item_full_height,
+    renderer_render_rectangle(gui->renderer, beg_x, y, 10000, item_full_height,
                               bgcolor);
     list.render_item_fn(list.state, i, gui->renderer, beg_x + list.item_padding,
                         y + list.item_padding, fgcolor);

@@ -219,7 +219,7 @@ static bool browser_window_list_render_header(void *state, uint32_t index,
                                               display_pixel_t color) {
   browser_window_state_t *bstate = (browser_window_state_t *)state;
   renderer_render_rectangle(renderer, beg_x - 3, beg_y + bstate->font->size,
-                            1000, 1, color);
+                            10000, 1, color);
 
   uint16_t offset = beg_x;
 
@@ -242,7 +242,7 @@ static void browser_window_job(void *state) {
   for (int i = 0; i < COLUMNS_COUNT; i++) {
     uint16_t max_size = font_measure_text(bstate->font, column_names[i]).x;
     for (int j = 0; j < bstate->current_directory->files_count; j++) {
-      char *data = browser_get_column_data(bstate->current_directory->files, i, tmp);
+      char *data = browser_get_column_data(&bstate->current_directory->files[j], i, tmp);
       if (data == NULL) {
         continue;
       }
