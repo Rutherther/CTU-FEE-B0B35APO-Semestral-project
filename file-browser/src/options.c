@@ -5,6 +5,20 @@
 #include <errno.h>
 #include <string.h>
 
+typedef struct {
+  uint16_t length;
+  uint16_t mime_length;
+  uint16_t program_length;
+  uint64_t mime;
+  uint64_t program;
+} __attribute__((__packed__)) load_exec_option_t;
+
+typedef struct {
+  uint32_t bytes_size;
+  uint16_t options_count;
+  uint64_t options;
+} __attribute__((__packed__)) load_exec_options_t;
+
 exec_options_loader_t exec_options_loader_create(char *filename) {
   exec_options_loader_t loader = {
       .options_filename = filename,
@@ -47,14 +61,21 @@ file_operation_error_t exec_options_loader_load(exec_options_loader_t *loader,
   fclose(file);
   loader->exec_options = (exec_options_t*)buffer;
 
-  intptr_t buffer_ptr = (intptr_t)buffer;
-  loader->exec_options->options += buffer_ptr;
+  load_exec_options_t *load_options = (load_exec_options_t*)loader->exec_options;
 
+  loader->exec_options->options = (exec_option_t*)(buffer + load_options->options);
+
+  load_exec_option_t *first = (load_exec_option_t*)loader->exec_options->options;
   for (int i = 0; i < loader->exec_options->options_count; i++) {
+    load_exec_option_t *load_option = first + i;
     exec_option_t option = loader->exec_options->options[i];
 
-    option.mime += buffer_ptr;
-    option.program += buffer_ptr;
+    char *mime = buffer + load_option->mime;
+    char *program = buffer + load_option->program;
+
+    option.mime = mime;
+    option.program = program;
+
     loader->exec_options->options[i] = option;
   }
 
@@ -62,13 +83,13 @@ file_operation_error_t exec_options_loader_load(exec_options_loader_t *loader,
 }
 
 file_operation_error_t exec_options_save(exec_options_t *options, char *filename) {
-  uint32_t length = sizeof(uint32_t);
+  uint32_t length = sizeof(exec_options_t);
   for (int i = 0; i < options->options_count; i++) {
     exec_option_t option = options->options[i];
     option.mime_length = strlen(option.mime);
     option.program_length = strlen(option.program);
     option.length = (option.mime_length + option.program_length) * sizeof(char) +
-                sizeof(uint16_t) * 2;
+                sizeof(exec_option_t) + 2;
     length += option.length;
 
     options->options[i] = option;
@@ -83,7 +104,7 @@ file_operation_error_t exec_options_save(exec_options_t *options, char *filename
   fwrite(&options->bytes_size, sizeof(options->bytes_size), 1, file);
   fwrite(&options->options_count, sizeof(options->options_count), 1, file);
 
-  uint64_t offset = 1;
+  uint64_t offset = sizeof(options->bytes_size) + sizeof(options->options_count) + sizeof(offset);
   fwrite(&offset, sizeof(offset), 1, file);
 
   if (ferror(file)) {
@@ -91,17 +112,17 @@ file_operation_error_t exec_options_save(exec_options_t *options, char *filename
     return file_operation_error_from_errno(errno);
   }
 
-  intptr_t chars_offset = (intptr_t) (sizeof(exec_option_t) * options->options_count);
+  uint64_t chars_offset = offset + (uint64_t) (sizeof(load_exec_option_t) * options->options_count);
   file_operation_error_t error = FILOPER_SUCCESS;
   for (int i = 0; i < options->options_count; i++) {
     exec_option_t option = options->options[i];
     fwrite(&option, sizeof(option.mime_length) + sizeof(option.length) + sizeof(option.program_length), 1, file);
 
     fwrite(&chars_offset, sizeof(chars_offset), 1, file);
-    chars_offset += option.program_length + 1;
+    chars_offset += option.mime_length + 1;
 
     fwrite(&chars_offset, sizeof(chars_offset), 1, file);
-    chars_offset += option.mime_length + 1;
+    chars_offset += option.program_length + 1;
 
     if (ferror(file)) {
       fclose(file);
@@ -111,8 +132,8 @@ file_operation_error_t exec_options_save(exec_options_t *options, char *filename
 
   for (int i = 0; i < options->options_count; i++) {
     exec_option_t option = options->options[i];
-    fwrite(option.program, option.program_length + 1, 1, file);
     fwrite(option.mime, option.mime_length + 1, 1, file);
+    fwrite(option.program, option.program_length + 1, 1, file);
 
     if (ferror(file)) {
       fclose(file);
@@ -134,3 +155,5 @@ char *exec_options_get_program(exec_options_t *options, char *mime) {
 
   return NULL;
 }
+
+exec_options_t *browser_exec_options;
