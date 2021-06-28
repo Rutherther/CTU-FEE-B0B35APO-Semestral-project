@@ -81,8 +81,6 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
   char full_path[PATH_MAX];
   path_join((char *)state.payload.local.path, path, full_path);
 
-  realpath(full_path, full_path);
-
   DIR *dirptr = opendir(full_path);
   if (dirptr == NULL) {
     ret.error = true;
