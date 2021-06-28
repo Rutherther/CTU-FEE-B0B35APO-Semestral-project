@@ -5,7 +5,25 @@
 #include "file_access.h"
 #include "options.h"
 
-file_operation_error_t file_open(file_t *file, exec_options_t *options,
+typedef enum {
+  OPENED_NONE,
+  OPENED_MIME,
+  OPENED_EXEC,
+  OPENED_TEXT,
+} opened_type_t;
+
+typedef struct {
+  opened_type_t type;
+
+  bool executed;
+  bool ended_with_error;
+
+  file_operation_error_t error;
+
+  executing_file_t executing_file;
+} opened_file_state_t;
+
+opened_file_state_t file_open(file_t *file, exec_options_t *options,
                                  fileaccess_state_t state);
 
 #endif // __FILE_OPEN_H__
