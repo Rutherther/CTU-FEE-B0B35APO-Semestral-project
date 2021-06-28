@@ -57,8 +57,11 @@ file_error_t text_viewer_load_file(text_viewer_t *text_viewer) {
   long fsize = ftell(file);
   fseek(file, 0, SEEK_SET);
 
-  char *data = malloc(sizeof(char) * (fsize + 1));
+  char *data = malloc(sizeof(char) * (fsize + 2));
+  data[fsize - 1] = '\0';
   data[fsize] = '\0';
+  data[fsize + 1] = '\0';
+
   if (data == NULL) {
     return FILER_UNKNOWN;
   }
