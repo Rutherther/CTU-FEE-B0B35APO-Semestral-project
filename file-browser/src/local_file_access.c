@@ -4,6 +4,7 @@
 #include "path.h"
 #include <errno.h>
 #include <ftw.h>
+#include <linux/limits.h>
 #include <magic.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,8 +78,10 @@ static file_operation_error_t file_get_information(void *malloced,
 directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
                                                      char *path) {
   directory_or_error_t ret;
-  char full_path[path_join_memory_size(state.payload.local.path, path)];
+  char full_path[PATH_MAX];
   path_join((char *)state.payload.local.path, path, full_path);
+
+  realpath(full_path, full_path);
 
   DIR *dirptr = opendir(full_path);
   if (dirptr == NULL) {
@@ -87,9 +90,13 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
     return ret;
   }
 
+  char show_path[PATH_MAX];
+  realpath(path, show_path);
+
   uint32_t files_count = 0;
   uint64_t size = directory_get_needed_bytes(path, &files_count, dirptr);
-  uint64_t files_offset = sizeof(directory_t) + strlen(path) + 1;
+
+  uint64_t files_offset = sizeof(directory_t) + strlen(show_path) + 1;
   uint64_t names_offset = files_count * sizeof(file_t) + files_offset;
   directory_t *directory = malloc(size);
   void *malloced = directory;
@@ -103,7 +110,7 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
   directory->path = malloced + sizeof(directory_t);
   directory->files = malloced + files_offset;
   directory->files_count = 0;
-  strcpy(directory->path, path);
+  strcpy(directory->path, show_path);
 
   struct dirent * dir;
   errno = 0;
@@ -208,13 +215,9 @@ local_fileaccess_file_get_mime_type(fileaccess_state_t state, file_t *file,
   const char *data = magic_file(magic, full_path);
   if (data == NULL) {
     error = file_operation_error_from_errno(errno);
+  } else {
+    strcpy(mime, data);
   }
-
-  uint16_t i = 0;
-  while (*data != '\0') {
-    mime[i++] = *data;
-  }
-  mime[i] = '\0';
 
   magic_close(magic);
   return error;

@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdio.h>
 
 executing_file_error_t executing_file_execute(char *path, char *args) {
   executing_file_error_t ret;
@@ -15,7 +16,7 @@ executing_file_error_t executing_file_execute(char *path, char *args) {
   }
 
   if (pid == 0) {
-    execl(path, args, (char*)NULL);
+    execl(path, path, args, (char*)NULL);
     exit(errno);
   }
 
