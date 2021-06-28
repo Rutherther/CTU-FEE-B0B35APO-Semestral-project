@@ -240,7 +240,7 @@ static void browser_window_job(void *state) {
 
   char tmp[MAX_COLUMN_CHARS];
   for (int i = 0; i < COLUMNS_COUNT; i++) {
-    uint16_t max_size = 0;
+    uint16_t max_size = font_measure_text(bstate->font, column_names[i]).x;
     for (int j = 0; j < bstate->current_directory->files_count; j++) {
       char *data = browser_get_column_data(bstate->current_directory->files, i, tmp);
       if (data == NULL) {

@@ -137,7 +137,15 @@ void gui_list_container_update(gui_t *gui, container_t *container) {
   if (first_visible_index < 0) {
     first_visible_index = 0;
   }
-  uint32_t items_count = container->height / item_full_height - 1;
+
+  uint32_t container_height = container->height;
+
+  bool header = list.render_header_fn != NULL;
+  if (header) {
+    container_height -= item_full_height;
+  }
+
+  uint32_t items_count = (double)(container_height) / item_full_height - 1;
   uint32_t last_visible_index = first_visible_index + items_count;
 
   uint32_t selected_index = list.selected_index;
