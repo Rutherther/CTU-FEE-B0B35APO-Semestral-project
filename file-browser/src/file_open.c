@@ -78,7 +78,7 @@ static bool file_open_text(file_t *file, exec_options_t *options,
 static bool file_open_executable(file_t *file, exec_options_t *options,
                                  fileaccess_state_t state,
                                  file_operation_error_t *error) {
-  if (file->permissions & S_IXUSR) {
+  if (file->permissions & S_IEXEC) {
     // executable
     file_prepare_before_open();
     executing_file_or_error_t executing_or_error =
@@ -115,8 +115,10 @@ file_operation_error_t file_open(file_t *file, exec_options_t *options, fileacce
     return error;
   }
   // 3. text mime
-  file_open_text(file, options, state, &error);
+  if (!file_open_text(file, options, state, &error)) {
+    return FILOPER_UNKNOWN;
+  }
 
-  // TODO: figure out return data?
+  // TODO: figure out return return?
   return error;
 }
