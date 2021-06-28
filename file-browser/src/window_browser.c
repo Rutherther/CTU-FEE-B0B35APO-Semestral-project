@@ -16,9 +16,11 @@
 #include "renderer.h"
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 #define COLUMNS_COUNT 4
 #define MAX_COLUMN_CHARS 200
+#define STDERR_BUFFER_LENGTH 3000
 
 char *column_names[] ={"NAME", "TYPE", "SIZE", "MODIFIED"};
 
@@ -167,12 +169,29 @@ static void browser_window_item_clicked(container_t *container, void *state,
     // open
     logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Opening file %s",
                 current_file.name);
-    file_operation_error_t error = file_open(&current_file, browser_exec_options, bstate->state);
-    if (error != FILOPER_SUCCESS) {
-      fileaccess_log_error(logger, error);
-      dialog_info_show(bstate->gui, bstate->font, "Could not open file", fileaccess_get_error_text(error));
+    opened_file_state_t opened = file_open(&current_file, browser_exec_options, bstate->state);
+    if (opened.error != FILOPER_SUCCESS) {
+      fileaccess_log_error(logger, opened.error);
+      dialog_info_show(bstate->gui, bstate->font, "Could not open file", fileaccess_get_error_text(opened.error));
+    } else if (opened.executed) {
+      if (opened.ended_with_error) {
+        logger_error(logger, __FILE__, __FUNCTION__, __LINE__,
+                     "Executed file returned unhealthy signal %d", opened.executing_file.output_signal);
+
+        char buff[STDERR_BUFFER_LENGTH];
+        int chars_read = read(opened.executing_file.stderr_pipe[READ_END], buff, STDERR_BUFFER_LENGTH);
+        buff[chars_read] = '\0';
+
+        logger_error(logger, __FILE__, __FUNCTION__, __LINE__, "Returned stderr: %s", buff);
+        dialog_info_show(bstate->gui, bstate->font, "Exited with nonzero code", buff);
+      } else {
+        logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Successfully returned from executing file.");
+      }
+
+      executing_file_destroy(&opened.executing_file);
     } else {
-      logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Successfully returned from executing file.");
+      logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
+                  "Successfully returned without executing anything.");
     }
   } else if (current_file.type == FT_FOLDER || current_file.type == FT_OTHER) {
     char new_dir_path[path_join_memory_size(bstate->current_directory->path, current_file.name)];

@@ -7,6 +7,17 @@
 #include "nonblocking_io.h"
 #include "serialize_lock.h"
 
+static opened_file_state_t opened_file_create() {
+  opened_file_state_t state = {
+    .error = FILOPER_SUCCESS,
+    .ended_with_error = false,
+    .executed = false,
+    .type = 0,
+  };
+
+  return state;
+}
+
 static void file_prepare_before_open() {
   serialize_unlock();
 }
@@ -20,40 +31,49 @@ static void file_prepare_after_close() {
   }
 }
 
-static void file_execute(executing_file_t *executing) {
+static opened_file_state_t file_execute(executing_file_t *executing, opened_type_t type) {
   executing_file_wait(executing);
   file_prepare_after_close();
+
+  opened_file_state_t opened = opened_file_create();
+  opened.type = type;
+  opened.executed = true;
+  opened.executing_file = *executing;
+  opened.ended_with_error = executing->output_signal != 0;
+
+  return opened;
 }
 
-static bool file_open_mime(file_t *file, exec_options_t *options,
-                           fileaccess_state_t state, char *base_mime,
-                           file_operation_error_t *error) {
+static opened_file_state_t file_open_mime(file_t *file, exec_options_t *options,
+                           fileaccess_state_t state, char *base_mime) {
+  opened_file_state_t opened = opened_file_create();
+
   if (options == NULL) {
-    return false;
+    return opened;
   }
 
   char mime[256];
   if (base_mime != NULL) {
     strcpy(mime, base_mime);
   } else {
-    *error = fileaccess_file_get_mimetype(state, file, mime);
+    opened.error = fileaccess_file_get_mimetype(state, file, mime);
 
-    if (*error != FILOPER_SUCCESS) {
-      return true;
+    if (opened.error != FILOPER_SUCCESS) {
+      return opened;
     }
   }
 
   char *program = exec_options_get_program(options, mime);
   if (program == NULL) {
-    return false;
+    return opened;
   }
 
   char local_path[PATH_MAX];
-  *error =
+  opened.error =
       fileaccess_file_get_local_path(state, file, local_path);
 
-  if (*error != FILOPER_SUCCESS) {
-    return true;
+  if (opened.error != FILOPER_SUCCESS) {
+    return opened;
   }
 
   file_prepare_before_open();
@@ -61,64 +81,53 @@ static bool file_open_mime(file_t *file, exec_options_t *options,
       executing_file_execute(program, local_path);
 
   if (executing_or_error.error != FILOPER_SUCCESS) {
-    return executing_or_error.error;
+    opened.error = executing_or_error.error;
+    return opened;
   }
 
-  file_execute(&executing_or_error.file);
-
-  return true;
+  return file_execute(&executing_or_error.file, base_mime != NULL ? OPENED_TEXT : OPENED_MIME);
 }
 
-static bool file_open_text(file_t *file, exec_options_t *options,
-                           fileaccess_state_t state,
-                           file_operation_error_t *error) {
-  return file_open_mime(file, options, state, "text", error);
+static opened_file_state_t file_open_text(file_t *file, exec_options_t *options,
+                           fileaccess_state_t state) {
+  return file_open_mime(file, options, state, "text");
 }
 
-static bool file_open_executable(file_t *file, exec_options_t *options,
-                                 fileaccess_state_t state,
-                                 file_operation_error_t *error) {
+static opened_file_state_t file_open_executable(file_t *file, exec_options_t *options,
+                                 fileaccess_state_t state) {
+  opened_file_state_t opened = opened_file_create();
+  
   if (file->permissions & S_IEXEC) {
     // executable
     file_prepare_before_open();
     executing_file_or_error_t executing_or_error =
         fileaccess_file_execute(state, file, "");
     if (executing_or_error.error) {
-      *error = executing_or_error.error;
-      return true;
+      opened.error = executing_or_error.error;
+      return opened;
     }
 
-    file_execute(&executing_or_error.payload.file);
-    return true;
+    return file_execute(&executing_or_error.payload.file, OPENED_EXEC);
   }
 
-  return false;
+  return opened;
 }
 
-file_operation_error_t file_open(file_t *file, exec_options_t *options, fileaccess_state_t state) {
-  file_operation_error_t error = FILOPER_SUCCESS;
+opened_file_state_t file_open(file_t *file, exec_options_t *options, fileaccess_state_t state) {
+  opened_file_state_t opened;
 
   // 1. try mime
-  if (file_open_mime(file, options, state, NULL, &error)) {
-    return error;
-  }
+  opened = file_open_mime(file, options, state, NULL);
 
-  if (error != FILOPER_SUCCESS) {
-    return error;
+  if (opened.executed || opened.error != FILOPER_SUCCESS) {
+    return opened;
   }
   // 2. is executable? execute it
-  if (file_open_executable(file, options, state, &error)) {
-    return error;
-  }
+  opened = file_open_executable(file, options, state);
 
-  if (error != FILOPER_SUCCESS) {
-    return error;
+  if (opened.executed || opened.error != FILOPER_SUCCESS) {
+    return opened;
   }
   // 3. text mime
-  if (!file_open_text(file, options, state, &error)) {
-    return FILOPER_UNKNOWN;
-  }
-
-  // TODO: figure out return return?
-  return error;
+  return file_open_text(file, options, state);
 }
