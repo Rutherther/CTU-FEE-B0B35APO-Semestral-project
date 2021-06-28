@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 
   mzapo_pheripherals_t pheripherals = mzapo_pheripherals_create(&ledstrip, &rgb_leds, &display, &knobs);
 
-  font_t font = font_create(font_wTahoma_40);
+  font_t font = font_family_create(font_wTahoma_22, &fontFamily_wTahoma);
   font.size = 20;
   font.char_spacing = 2;
 

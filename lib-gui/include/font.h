@@ -1,8 +1,8 @@
 #ifndef __FONT_H__
 #define __FONT_H__
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef uint16_t font_bits_t;
 
@@ -30,11 +30,18 @@ struct font_descriptor_t {
 
   uint32_t default_char;
 
-  font_descriptor_t* font_next_part;
+  font_descriptor_t *font_next_part;
 };
 
 typedef struct {
+  font_descriptor_t **descriptors;
+  uint16_t descriptors_count;
+} font_family_t;
+
+typedef struct {
   font_descriptor_t font;
+  font_family_t *family;
+
   uint16_t size;
 
   uint16_t line_spacing;
@@ -50,67 +57,72 @@ typedef coords_t size2d_t;
 
 /**
  * @brief Create font from given descriptor
- * 
- * @param descriptor 
- * @return font_t 
+ *
+ * @param descriptor
+ * @return font_t
  */
 font_t font_create(font_descriptor_t descriptor);
 
+font_t font_family_create(font_descriptor_t def, font_family_t *family);
+font_descriptor_t *font_family_get_descriptor(font_t *font);
 
 uint32_t font_get_real_char(char *text, uint16_t *bytes);
 
-
 /**
- * @brief Get text dimensions for given font 
- * 
- * @param font 
- * @param text 
- * @return size2d_t 
+ * @brief Get text dimensions for given font
+ *
+ * @param font
+ * @param text
+ * @return size2d_t
  */
 size2d_t font_measure_text(font_t *font, char *text);
 
 /**
  * @brief Get font character for font from char
- * 
- * @param font 
- * @param c 
- * @return font_character_t 
+ *
+ * @param font
+ * @param c
+ * @return font_character_t
  */
 font_character_t font_get_character(font_t *font, uint32_t c);
 
 /**
- * @brief Get whether font contains font character 
- * 
- * @param font 
- * @param c 
- * @return true character is in font 
+ * @brief Get whether font contains font character
+ *
+ * @param font
+ * @param c
+ * @return true character is in font
  * @return false character is not in font
  */
 bool font_contains_character(font_t *font, uint32_t c);
 
 /**
  * @brief Fit text with ellipsis to get how many characters can be shown
- * 
- * @param font 
- * @param size 
- * @param text 
- * @param ellipsis 
+ *
+ * @param font
+ * @param size
+ * @param text
+ * @param ellipsis
  * @return uint16_t number of characters that can be fit
  */
-uint16_t font_fit_ellipsis(font_t *font, size2d_t size, char *text, char *ellipsis);
+uint16_t font_fit_ellipsis(font_t *font, size2d_t size, char *text,
+                           char *ellipsis);
 
 /**
- * @brief Fit cut text without any ellipsis to get how many characters can be shown
- * 
- * @param font 
- * @param size 
- * @param text 
- * @return uint16_t 
+ * @brief Fit cut text without any ellipsis to get how many characters can be
+ * shown
+ *
+ * @param font
+ * @param size
+ * @param text
+ * @return uint16_t
  */
 uint16_t font_fit_cut(font_t *font, size2d_t size, char *text);
 
 extern font_descriptor_t font_rom8x16;
 extern font_descriptor_t font_winFreeSystem14x16;
 extern font_descriptor_t font_wTahoma_40;
+extern font_descriptor_t font_wTahoma_22;
+extern font_family_t fontFamily_wTahoma;
 
 #endif // __FONT_H__

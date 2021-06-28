@@ -99,7 +99,8 @@ static coords_t renderer_get_char_xy(int64_t x, int64_t y, uint64_t downscale_i,
 
 size2d_t renderer_write_char(renderer_t *renderer, uint16_t bx, uint16_t by,
                              font_t *font, uint32_t c, display_pixel_t color) {
-  double scale = (double)font->size / font->font.height;
+  font_descriptor_t *descriptor = font_family_get_descriptor(font);
+  double scale = (double)font->size / descriptor->height;
   double downscale = 1 / scale;
   uint64_t convert = 100000;
 

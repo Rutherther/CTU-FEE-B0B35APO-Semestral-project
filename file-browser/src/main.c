@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 
   mzapo_pheripherals_t pheripherals = mzapo_pheripherals_create(&ledstrip, &rgb_leds, &display, &knobs);
 
-  font_t font = font_create(font_rom8x16);
+  font_t font = font_family_create(font_wTahoma_22, &fontFamily_wTahoma);
   font.char_spacing = 2;
 
   file_browser_t file_browser = file_browser_create(pheripherals, &logger, font);

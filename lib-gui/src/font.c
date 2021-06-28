@@ -1,8 +1,37 @@
 #include "font.h"
 #include <string.h>
 #include <stdio.h>
+
 static bool font_descriptor_contains_character(font_descriptor_t **descriptor,
                                                uint32_t c);
+
+
+static int32_t absolute(int32_t a) {
+  return a < 0 ? -a : a;
+}
+
+font_descriptor_t *font_family_get_descriptor(font_t *font) {
+  if (font->family == NULL) {
+    return &font->font;
+  }
+
+
+  int32_t nearest = font->family->descriptors[0]->height, nearest_index = 0;
+  for (int i = 1; i < font->family->descriptors_count; i++) {
+    font_descriptor_t *descriptor = font->family->descriptors[i];
+
+    int32_t diff = absolute(descriptor->height - font->size);
+    int32_t nearest_diff = absolute(nearest - font->size);
+
+    if (diff < nearest_diff) {
+      nearest_index = i;
+      nearest = descriptor->height;
+    }
+  }
+
+  printf("%d\r\n", nearest_index);
+  return font->family->descriptors[nearest_index];
+}
 
 uint32_t font_get_real_char(char *text, uint16_t *bytes) {
   *bytes = 1;
@@ -59,6 +88,19 @@ font_t font_create(font_descriptor_t descriptor) {
       .size = descriptor.height,
       .char_spacing = 0,
       .line_spacing = 0,
+      .family = NULL,
+  };
+
+  return font;
+}
+
+font_t font_family_create(font_descriptor_t def, font_family_t *family) {
+  font_t font = {
+    .font = def,
+    .size = family->descriptors[0]->height,
+    .char_spacing = 0,
+    .line_spacing = 0,
+    .family = family,
   };
 
   return font;
@@ -82,7 +124,7 @@ size2d_t font_measure_text(font_t *font, char *text) {
 }
 
 font_character_t font_get_character(font_t *font, uint32_t c) {
-  font_descriptor_t *descriptor = &font->font;
+  font_descriptor_t *descriptor = font_family_get_descriptor(font);
 
   if (!font_descriptor_contains_character(&descriptor, c)) {
     return font_get_character(font, font->font.default_char);
@@ -124,7 +166,7 @@ static bool font_descriptor_contains_character(font_descriptor_t **descriptor,
 }
 
 bool font_contains_character(font_t *font, uint32_t c){
-  font_descriptor_t *descriptor = &font->font;
+  font_descriptor_t *descriptor = font_family_get_descriptor(font);
   return font_descriptor_contains_character(&descriptor, c);
 }
 
