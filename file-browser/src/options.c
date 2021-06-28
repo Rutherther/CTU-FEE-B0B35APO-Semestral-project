@@ -83,13 +83,13 @@ file_operation_error_t exec_options_loader_load(exec_options_loader_t *loader,
 }
 
 file_operation_error_t exec_options_save(exec_options_t *options, char *filename) {
-  uint32_t length = sizeof(exec_options_t);
+  uint32_t length = sizeof(load_exec_options_t);
   for (int i = 0; i < options->options_count; i++) {
     exec_option_t option = options->options[i];
     option.mime_length = strlen(option.mime);
     option.program_length = strlen(option.program);
     option.length = (option.mime_length + option.program_length) * sizeof(char) +
-                sizeof(exec_option_t) + 2;
+                sizeof(load_exec_option_t) + 2;
     length += option.length;
 
     options->options[i] = option;
