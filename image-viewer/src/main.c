@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
   rgb_led_clear(&led, LED_RIGHT);
 
   if (viewer.error != IMERR_SUCCESS) {
-    logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not load image %d", viewer.error);
+    image_error_log(&logger, viewer.error);
     rgb_led_set_red(&led, LED_RIGHT);
     return IMAGE_ERROR;
   }

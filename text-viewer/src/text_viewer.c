@@ -7,6 +7,7 @@
 #include "gui_component_text_view.h"
 #include "input.h"
 #include "keyboard_const.h"
+#include "logger.h"
 #include "mzapo_led_strip.h"
 #include "mzapo_rgb_led.h"
 #include "renderer.h"
@@ -16,6 +17,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+char *file_error_strings[] = {"Success",          "No such file or directory",
+                              "No permissions",   "Cannot open file",
+                              "Cannot read file", "Unknown"};
+
+void file_error_log(logger_t *logger, file_error_t error) {
+  logger_error(logger, __FILE__, __FUNCTION__, __LINE__, "There was an error loading file: %s", file_error_strings[error]);
+}
 
 text_viewer_t text_viewer_create(char *path, mzapo_pheripherals_t pheripherals,
                                  logger_t *logger, font_t font) {

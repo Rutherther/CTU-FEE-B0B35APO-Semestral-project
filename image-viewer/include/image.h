@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "direction.h"
+#include "logger.h"
 #include "display_utils.h"
 
 typedef enum {
@@ -62,6 +63,8 @@ typedef struct {
  * @return image_t
  */
 image_t image_create(char *path);
+
+void image_error_log(logger_t *logger, image_error_t error);
 
 /**
  * @brief Clean up image data

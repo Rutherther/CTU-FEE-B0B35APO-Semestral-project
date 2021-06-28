@@ -39,6 +39,8 @@ typedef struct {
 text_viewer_t text_viewer_create(char *path, mzapo_pheripherals_t pheripherals,
                                  logger_t *logger, font_t font);
 
+void file_error_log(logger_t *logger, file_error_t error);
+
 /**
  * @brief Cleans up text viewer data
  *

@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
               "Loading file");
   file_error_t error = text_viewer_load_file(&text_viewer);
   if (error != FILER_SUCCESS) {
-    logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not load file.");
+    file_error_log(&logger, error);
     rgb_led_set_red(&rgb_leds, LED_RIGHT);
     return ERROR_CANT_OPEN_FILE;
   }

@@ -1,9 +1,17 @@
 #include "image.h"
 #include "direction.h"
 #include "display_utils.h"
+#include "logger.h"
 #include <stdlib.h>
 
+char *image_error_strings[] = {
+    "Success",        "Unknown format",   "No such file or directory",
+    "No permissions", "Cannot open file", "Wrong format",
+    "Unknown"};
 
+void image_error_log(logger_t *logger, image_error_t error) {
+  logger_error(logger, __FILE__, __FUNCTION__, __LINE__, "There was an error loading image: %s", image_error_strings[error]);
+}
 
 image_t image_create(char *path) {
   image_t image = {
