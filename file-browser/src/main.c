@@ -56,6 +56,7 @@ void exec_options_create_default() {
       {.mime = "image/jpeg", .program = "./bin/image-viewer"},
       {.mime = "image/x-portable-pixmap", .program = "./bin/image-viewer"},
       {.mime = "image/x-portable-anymap", .program = "./bin/image-viewer"},
+      {.mime = "text/plain", .program = "./bin/text-viewer"},
       {.mime = "text", .program = "./bin/text-viewer"},
   };
   exec_options_t options = {
