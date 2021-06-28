@@ -95,7 +95,7 @@ void gui_list_container_render(gui_t *gui, container_t *container) {
   uint32_t selected_index = gui_list_get_selected_index(container);
 
   if (list.render_header_fn &&
-      list.render_header_fn(list.state, 0, gui->renderer, 0 + list.item_padding,
+      list.render_header_fn(list.state, 0, gui->renderer, beg_x + list.item_padding,
                             0 + list.item_padding, WHITE_PIXEL)) {
     // if header was rendered, translate initial position
     renderer_translate(gui->renderer, 0, item_full_height);
