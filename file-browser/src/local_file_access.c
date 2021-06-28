@@ -75,6 +75,12 @@ static file_operation_error_t file_get_information(void *malloced,
   return FILOPER_SUCCESS;
 }
 
+static int compare_files(const void *a, const void *b) {
+  const file_t *file_a = (const file_t*)a;
+  const file_t *file_b = (const file_t *)b;
+
+  return strcmp(file_a->name, file_b->name);
+}
 directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
                                                      char *path) {
   directory_or_error_t ret;
@@ -146,9 +152,12 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
   closedir(dirptr);
 
   if (errno != 0) {
+    free(malloced);
     ret.error = true;
     ret.payload.error = file_operation_error_from_errno(errno);
   } else {
+    qsort(directory->files, directory->files_count, sizeof(file_t), compare_files);
+
     ret.error = false;
     ret.payload.directory = directory;
   }
