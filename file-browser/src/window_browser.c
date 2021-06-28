@@ -14,6 +14,8 @@
 #include "logger.h"
 #include "path.h"
 #include "renderer.h"
+#include <stdio.h>
+#include <time.h>
 
 #define COLUMNS_COUNT 4
 #define MAX_COLUMN_CHARS 200
@@ -270,6 +272,11 @@ static void browser_window_job(void *state) {
   }
 }
 
+#define KiB 1024LU
+#define MiB KiB*KiB
+#define GiB KiB*KiB*KiB
+#define TiB KiB*KiB*KiB*KiB
+
 static char *browser_get_column_data(file_t *file, uint16_t column, char *out) {
   switch (column) {
   case 0:
@@ -288,10 +295,33 @@ static char *browser_get_column_data(file_t *file, uint16_t column, char *out) {
     break;
   case 2:
     // get size
-    return "";
+    {
+      uint64_t size = file->size;
+      double transformed = size;
+      char *append = "B";
+
+      if (size > TiB) {
+        transformed /= TiB;
+        append = "TiB";
+      } else if (size > GiB) {
+        transformed /= GiB;
+        append = "GiB";
+      } else if (size > MiB) {
+        transformed /= MiB;
+        append = "MiB";
+      } else if (size > KiB) {
+        transformed /= KiB;
+        append = "KiB";
+      }
+      
+      sprintf(out, "%.2f %s", transformed, append);
+      return out;
+    }
   case 3:
     // date modified
-    return "";
+
+    strftime(out, MAX_COLUMN_CHARS, "%c", localtime(&file->modify_time));
+    return out;
   }
 
   return NULL;
