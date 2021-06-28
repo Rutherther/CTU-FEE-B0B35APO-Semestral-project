@@ -46,6 +46,7 @@ bool gui_list_container_set_state(container_t *container, void *state,
                                   uint32_t items_count) {
   container->inner.list.state = state;
   container->inner.list.items_count = items_count;
+  container->inner.list.selected_index = 0;
   return true;
 }
 

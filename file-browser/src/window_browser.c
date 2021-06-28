@@ -1,6 +1,7 @@
 #include "window_browser.h"
 #include "display_utils.h"
 #include "file_access.h"
+#include "file_open.h"
 #include "gui.h"
 #include "gui_component_text.h"
 #include "gui_container_info.h"
@@ -9,6 +10,7 @@
 #include "gui_window_info.h"
 #include "input.h"
 #include "logger.h"
+#include "path.h"
 #include "renderer.h"
 
 typedef struct {
@@ -143,7 +145,36 @@ static void browser_window_item_clicked(container_t *container, void *state,
   browser_window_state_t *bstate = (browser_window_state_t *)state;
   logger_t *logger = bstate->gui->logger;
 
-  logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Item was clicked.");
+  file_t current_file = bstate->current_directory->files[selected_index];
+
+  if (current_file.type == FT_FILE) {
+    // open
+    logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Opening file %s",
+                current_file.name);
+    file_operation_error_t error = file_open(&current_file, browser_exec_options, bstate->state);
+    if (error != FILOPER_SUCCESS) {
+      fileaccess_log_error(logger, error);
+    } else {
+      logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Successfully returned from executing file.");
+    }
+  } else if (current_file.type == FT_FOLDER || current_file.type == FT_OTHER) {
+    char new_dir_path[path_join_memory_size(bstate->current_directory->path, current_file.name)];
+    path_join(bstate->current_directory->path, current_file.name, new_dir_path);
+
+    directory_or_error_t data = fileaccess_directory_list(bstate->state, new_dir_path);
+    if (data.error) {
+      // show error
+      fileaccess_log_error(logger, data.payload.error);
+    } else {
+      fileaccess_directory_close(bstate->state, bstate->current_directory);
+      bstate->current_directory = data.payload.directory;
+      bstate->text_state.line = bstate->current_directory->path;
+
+      gui_list_container_set_state(bstate->list_container, bstate, bstate->current_directory->files_count);
+
+      logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Opening directory %s", bstate->current_directory->path);
+    }
+  }
 }
 
 static bool browser_window_list_render_item(void *state, uint32_t index,
@@ -151,6 +182,11 @@ static bool browser_window_list_render_item(void *state, uint32_t index,
                                             int16_t beg_y,
                                             display_pixel_t color) {
   browser_window_state_t *bstate = (browser_window_state_t *)state;
+  logger_t *logger = bstate->gui->logger;
+  if (index >= bstate->current_directory->files_count) {
+    logger_error(logger, __FILE__, __FUNCTION__, __LINE__, "Tried to reach item out of index");
+    return false;
+  }
   file_t file = bstate->current_directory->files[index];
   renderer_write_string(renderer, beg_x, beg_y, 0, bstate->font, file.name,
                         color);
@@ -161,7 +197,6 @@ static bool browser_window_list_render_header(void *state, uint32_t index,
                                               renderer_t *renderer,
                                               int16_t beg_x, int16_t beg_y,
                                               display_pixel_t color) {
-
   browser_window_state_t *bstate = (browser_window_state_t *)state;
   renderer_write_string(renderer, beg_x, beg_y, 0, bstate->font, "This is header", color);
   return true;
