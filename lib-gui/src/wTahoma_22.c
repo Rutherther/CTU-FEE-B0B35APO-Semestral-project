@@ -30090,8 +30090,9 @@ font_descriptor_t font_wTahoma_22 = {
 };
 
 font_descriptor_t *fontFamily_wTahoma_descriptors[] = {
+  &font_wTahoma_13,
   &font_wTahoma_22,
-  &font_wTahoma_40
+  &font_wTahoma_40,
 };
 
 font_family_t fontFamily_wTahoma = {

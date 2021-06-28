@@ -29,7 +29,6 @@ font_descriptor_t *font_family_get_descriptor(font_t *font) {
     }
   }
 
-  printf("%d\r\n", nearest_index);
   return font->family->descriptors[nearest_index];
 }
 

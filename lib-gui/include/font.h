@@ -123,6 +123,7 @@ extern font_descriptor_t font_rom8x16;
 extern font_descriptor_t font_winFreeSystem14x16;
 extern font_descriptor_t font_wTahoma_40;
 extern font_descriptor_t font_wTahoma_22;
+extern font_descriptor_t font_wTahoma_13;
 extern font_family_t fontFamily_wTahoma;
 
 #endif // __FONT_H__
