@@ -83,7 +83,7 @@ int16_t commands_execute(commands_t * commands, input_type_t type, char filter,
   for (int i = 0; i < commands->count; i++) {
     command_t command = commands->commands[i];
 
-    if (command.input.filter == filter && command.input.type == type) {
+    if ((command.input.filter == filter || command.input.filter == 0) && command.input.type == type) {
       command.cmd(command.state, amount);
       commands_executed++;
     }
