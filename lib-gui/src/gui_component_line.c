@@ -14,8 +14,7 @@ component_t gui_line_create(const display_pixel_t *color, int16_t x, int16_t y,
 void gui_line_render(container_t *container, component_t *component,
                      gui_t *gui) {
   if (gui_is_component_visible(gui, container, component)) {
-    coords_t coords = gui_component_get_screen_position(container, component);
-    renderer_render_rectangle(gui->renderer, coords.x, coords.y, component->width,
+    renderer_render_border(gui->renderer, component->x, component->y, component->width,
                            component->height,
                            *(display_pixel_t *)component->state);
   }

@@ -160,11 +160,13 @@ void renderer_render_border(renderer_t *renderer, uint16_t x, uint16_t y,
   if (width > 1 || height == 1) {
     for (int i = 0; i < width; i++) {
       if (coords_is_within(x + i, y, beg, end)) {
-        display_set_pixel(renderer->display, x + i, y, color);
+        display_set_pixel(renderer->display, x + i + renderer->translate_x,
+                          y + renderer->translate_y, color);
       }
 
       if (coords_is_within(x + i, y + height, beg, end)) {
-        display_set_pixel(renderer->display, x + i, y + height, color);
+        display_set_pixel(renderer->display, x + i + renderer->translate_x,
+                          y + height + renderer->translate_y, color);
       }
     }
   }
@@ -172,11 +174,13 @@ void renderer_render_border(renderer_t *renderer, uint16_t x, uint16_t y,
   if (height > 1) {
     for (int i = 0; i < height; i++) {
       if (coords_is_within(x, y + i, beg, end)) {
-        display_set_pixel(renderer->display, x, y + i, color);
+        display_set_pixel(renderer->display, x + renderer->translate_x,
+                          y + i + renderer->translate_y, color);
       }
 
       if (coords_is_within(x + width, y + i, beg, end)) {
-        display_set_pixel(renderer->display, x + width, y + i, color);
+        display_set_pixel(renderer->display, x + width + renderer->translate_x,
+                          y + i + renderer->translate_y, color);
       }
     }
   }
