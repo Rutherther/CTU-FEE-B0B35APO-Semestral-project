@@ -51,7 +51,7 @@ void renderer_render(renderer_t *renderer);
  * @return size2d_t
  */
 size2d_t renderer_write_string(renderer_t *renderer, uint16_t x, uint16_t y,
-                               uint16_t length, font_t *font, char *text,
+                               uint16_t length, font_t *font, const char *text,
                                display_pixel_t color);
 
 /**
