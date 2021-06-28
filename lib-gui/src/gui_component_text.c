@@ -31,7 +31,7 @@ void gui_text_render(container_t *container, component_t *component,
     }
 
     int32_t remaining = strlen(state->line);
-    char *line = state->line;
+    const char *line = state->line;
 
     int16_t y = component->y;
 
@@ -42,6 +42,13 @@ void gui_text_render(container_t *container, component_t *component,
       uint16_t fit_chars = font_fit_cut(state->font, size, line);
       if (fit_chars == 0) {
         fit_chars = remaining;
+      }
+
+      for (int i = 0; i < fit_chars; i++) {
+        if (line[i] == '\n' && lines_fit > 1) {
+          fit_chars = i + 1;
+          break;
+        }
       }
 
       renderer_write_string(gui->renderer, component->x, y, fit_chars,
