@@ -35,7 +35,9 @@ int file_set_nonblocking(int file, struct termios *old)
     tcgetattr(file, old);
   }
 
-  cfmakeraw(&attrs);
+  attrs.c_lflag &= ~ICANON;
+  attrs.c_lflag &= ~ECHO;
+  //cfmakeraw(&attrs);
 
   tcsetattr(file, TCSANOW, &attrs);
   return 1;

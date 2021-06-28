@@ -7,30 +7,28 @@ container_t gui_list_container_create(void *state, uint32_t items_count,
                                       render_item render_it,
                                       render_item render_header) {
   list_container_t list = {
-    .item_height = item_height,
-    .items_count = items_count,
-    .state = state,
-    .scroll_x = 0,
-    .scroll_y = 0,
-    .selected_index = 0,
-    .render_header_fn = render_header,
-    .render_item_fn = render_it,
-    .regular_background = BLACK_PIXEL,
-    .regular_foreground = WHITE_PIXEL,
-    .selected_background = WHITE_PIXEL,
-    .selected_foreground = BLACK_PIXEL,
-    .item_padding = 3,
+      .item_height = item_height,
+      .items_count = items_count,
+      .state = state,
+      .scroll_x = 0,
+      .scroll_y = 0,
+      .selected_index = 0,
+      .render_header_fn = render_header,
+      .render_item_fn = render_it,
+      .regular_background = BLACK_PIXEL,
+      .regular_foreground = WHITE_PIXEL,
+      .selected_background = WHITE_PIXEL,
+      .selected_foreground = BLACK_PIXEL,
+      .item_padding = 3,
   };
 
-  container_t container = {
-    .focusable = true,
-    .focused = false,
-    .height = item_height * items_count,
-    .width = 0,
-    .inner.list = list,
-    .x = 0,
-    .y = 0
-  };
+  container_t container = {.focusable = true,
+                           .focused = false,
+                           .height = item_height * items_count,
+                           .width = 0,
+                           .inner.list = list,
+                           .x = 0,
+                           .y = 0};
 
   return container;
 }
@@ -57,7 +55,8 @@ bool gui_list_container_set_item_height(container_t *container,
   return true;
 }
 
-bool gui_list_container_set_render_function(container_t *container, render_item render_it,
+bool gui_list_container_set_render_function(container_t *container,
+                                            render_item render_it,
                                             render_item render_header) {
   container->inner.list.render_item_fn = render_it;
   container->inner.list.render_header_fn = render_header;
@@ -94,6 +93,14 @@ void gui_list_container_render(gui_t *gui, container_t *container) {
 
   uint32_t selected_index = gui_list_get_selected_index(container);
 
+  if (list.render_header_fn &&
+      list.render_header_fn(list.state, 0, gui->renderer, 0 + list.item_padding,
+                            0 + list.item_padding, WHITE_PIXEL)) {
+    // if header was rendered, translate initial position
+    renderer_translate(gui->renderer, 0, item_full_height);
+    renderer_set_draw_area(gui->renderer, container->width, container->height - item_full_height);
+  }
+
   for (uint32_t i = first_index; i < end_index && i < list.items_count; i++) {
     int32_t y = beg_y + (i - first_index) * item_full_height;
     display_pixel_t fgcolor = list.regular_foreground;
@@ -104,8 +111,10 @@ void gui_list_container_render(gui_t *gui, container_t *container) {
       bgcolor = list.selected_background;
     }
 
-    renderer_render_rectangle(gui->renderer, beg_x, y, 1000, item_full_height, bgcolor);
-    list.render_item_fn(list.state, i, gui->renderer, beg_x + list.item_padding, y + list.item_padding, fgcolor);
+    renderer_render_rectangle(gui->renderer, beg_x, y, 1000, item_full_height,
+                              bgcolor);
+    list.render_item_fn(list.state, i, gui->renderer, beg_x + list.item_padding,
+                        y + list.item_padding, fgcolor);
   }
 }
 
@@ -137,7 +146,6 @@ void gui_list_container_update(gui_t *gui, container_t *container) {
   } else if (selected_index > last_visible_index) {
     list.scroll_y = (selected_index - items_count) * item_full_height;
   }
-
 
   container->inner.list = list;
 }

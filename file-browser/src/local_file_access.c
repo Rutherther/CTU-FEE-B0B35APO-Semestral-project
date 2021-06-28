@@ -23,18 +23,28 @@ bool local_fileaccess_deinit_state(fileaccess_state_t data) {
   return true;
 }
 
-static file_operation_error_t file_get_information(void **malloced,
-                                                   uint64_t *offset, uint64_t *bytes_malloced,
+static uint64_t directory_get_needed_bytes(char *name, uint32_t *dirs_count, DIR *dirptr) {
+  uint64_t size = sizeof(directory_t) + strlen(name) + 1;
+
+  struct dirent *dir;
+  errno = 0;
+  *dirs_count = 0;
+  while ((dir = readdir(dirptr)) != NULL) {
+    size += sizeof(file_t);
+    size += strlen(dir->d_name) + 1;
+    (*dirs_count)++;
+  }
+
+  rewinddir(dirptr);
+  return size;
+}
+
+static file_operation_error_t file_get_information(void *malloced,
+                                                   uint64_t *file_offset,
+                                                   uint64_t *names_offset,
                                                    fileaccess_state_t state,
                                                    file_t file) {
   size_t name_len = strlen(file.name);
-  bytes_malloced += sizeof(file_t) + name_len + 1;
-  void *new = realloc(*malloced, *bytes_malloced);
-  if (new == NULL) {
-    free(*malloced);
-    return FILOPER_UNKNOWN;
-  }
-  *malloced = new;
 
   char full_path[file_get_full_path_memory_size(state, file.directory, &file)];
   file_get_full_path(state, file.directory, &file, full_path);
@@ -44,8 +54,8 @@ static file_operation_error_t file_get_information(void **malloced,
   int status = stat(full_path, &stats);
 
   if (status == -1) {
-    free(new);
-    return file_operation_error_from_errno(errno);
+    //free(new);
+    //return file_operation_error_from_errno(errno);
   }
 
   file.size = stats.st_size;
@@ -53,13 +63,13 @@ static file_operation_error_t file_get_information(void **malloced,
   file.uid = stats.st_uid;
   file.permissions = stats.st_mode;
 
-  file_t *stored = new + *offset;
+  file_t *stored = malloced + *file_offset;
   *stored = file;
-  *offset += sizeof(file_t);
+  *file_offset += sizeof(file_t);
 
-  strcpy(new + *offset, file.name);
-  stored->name = new + *offset;
-  *offset += name_len + 1;
+  strcpy(malloced + *names_offset, file.name);
+  stored->name = malloced + *names_offset;
+  *names_offset += name_len + 1;
 
   return FILOPER_SUCCESS;
 }
@@ -70,9 +80,18 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
   char full_path[path_join_memory_size(state.payload.local.path, path)];
   path_join((char *)state.payload.local.path, path, full_path);
 
-  uint64_t malloc_offset = sizeof(directory_t) + strlen(path) + 1;
-  uint64_t bytes_malloced = sizeof(directory_t) + strlen(path) + 1;
-  directory_t *directory = malloc(malloc_offset);
+  DIR *dirptr = opendir(full_path);
+  if (dirptr == NULL) {
+    ret.error = true;
+    ret.payload.error = file_operation_error_from_errno(errno);
+    return ret;
+  }
+
+  uint32_t files_count = 0;
+  uint64_t size = directory_get_needed_bytes(path, &files_count, dirptr);
+  uint64_t files_offset = sizeof(directory_t) + strlen(path) + 1;
+  uint64_t names_offset = files_count * sizeof(file_t) + files_offset;
+  directory_t *directory = malloc(size);
   void *malloced = directory;
 
   if (directory == NULL) {
@@ -82,16 +101,9 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
   }
 
   directory->path = malloced + sizeof(directory_t);
+  directory->files = malloced + files_offset;
+  directory->files_count = 0;
   strcpy(directory->path, path);
-
-
-  DIR *dirptr = opendir(full_path);
-  if (dirptr == NULL) {
-    ret.error = true;
-    ret.payload.error = file_operation_error_from_errno(errno);
-    free(malloced);
-    return ret;
-  }
 
   struct dirent * dir;
   errno = 0;
@@ -115,16 +127,18 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
       break;
     }
 
-    ret.payload.error = file_get_information(&malloced, &malloc_offset,
-                                             &bytes_malloced, state, file);
+    ret.payload.error = file_get_information(malloced, &files_offset,
+                                             &names_offset, state, file);
+    errno = 0;
     if (ret.payload.error != FILOPER_SUCCESS) {
       ret.error = true;
-      free(malloced);
       return ret;
     }
 
     directory->files_count++;
   }
+
+  closedir(dirptr);
 
   if (errno != 0) {
     ret.error = true;

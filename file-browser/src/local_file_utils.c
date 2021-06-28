@@ -10,7 +10,11 @@
 static int nfw_callback(const char *fpath, const struct stat *sb, int typeflag);
 
 size_t file_get_full_path_memory_size(fileaccess_state_t state, directory_t *directory, file_t *file) {
-  return strlen(file->name) + strlen(state.payload.local.path) + strlen(file->name) + 3;
+  size_t root = strlen(state.payload.local.path);
+  size_t dir = strlen(directory->path);
+  size_t file_name = strlen(file->name);
+
+  return root + 1 + dir + 1 + file_name + 1;
 }
 
 bool file_get_full_path(fileaccess_state_t state,

@@ -1,6 +1,7 @@
 #include "gui_window_info.h"
 #include "gui.h"
 #include "gui_container_info.h"
+#include "logger.h"
 
 bool gui_window_init_and_loop(gui_t *gui, void *state, window_info_t info,
                               gui_loop_running_fn loop_running,

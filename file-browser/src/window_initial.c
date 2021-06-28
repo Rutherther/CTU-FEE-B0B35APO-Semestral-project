@@ -9,6 +9,7 @@
 #include "input.h"
 #include "logger.h"
 #include "renderer.h"
+#include "window_browser.h"
 
 #include <stdbool.h>
 
@@ -100,7 +101,9 @@ static bool initial_window_list_render_item(void *state, uint32_t index,
 
 static void command_handler_exit(void *state, int amount) {
   initial_window_state_t *istate = (initial_window_state_t *)state;
-  istate->running = false;
+  if (istate->gui->active_window == istate->initial_window) {
+    istate->running = false;
+  }
 }
 
 static void *initial_window_construct(window_t *window, void *state) {
@@ -140,6 +143,8 @@ static void initial_window_job(void *state) {
       (initial_window_state_t *)state;
 
   initial_window_state->list_container->inner.list.scroll_x = 0;
+  gui_list_container_set_item_height(initial_window_state->list_container,
+                                     initial_window_state->font.size);
   // do nothing?
 }
 
@@ -156,6 +161,7 @@ static void initial_window_item_clicked(container_t *container, void *state,
   case INITIAL_WINDOW_LOCAL_INDEX:
     logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
                 "Clicked local root filesystem");
+    window_browser_open_local(istate->gui, &istate->font);
     break;
   case INITIAL_WINDOW_MOUNT_INDEX:
     logger_info(logger, __FILE__, __FUNCTION__, __LINE__,

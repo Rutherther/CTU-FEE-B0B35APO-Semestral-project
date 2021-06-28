@@ -56,6 +56,8 @@ static void command_handler_move_up(void *state, int amount) {
 
 void gui_list_commands_register(commands_t *commands, gui_list_command_state_t *state) {
   commands_register(commands, IN_KEYBOARD, 13, command_handler_gui_list_clicked, state);
+  commands_register(commands, IN_KEYBOARD, 'v', command_handler_gui_list_clicked,
+                    state);
 
   commands_register(commands, IN_KEYBOARD, KEYBOARD_DOWN,
                     command_handler_move_down, state);

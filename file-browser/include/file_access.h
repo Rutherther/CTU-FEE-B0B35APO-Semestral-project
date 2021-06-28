@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include "file_execute.h"
+#include "logger.h"
 
 typedef struct directory_t directory_t;
 
@@ -51,6 +52,8 @@ typedef enum {
   FILOPER_NOT_ENOUGH_SPACE,
   FILOPER_UNKNOWN,
 } file_operation_error_t;
+
+extern const char *file_operation_error_strings[];
 
 typedef struct {
   bool error;
@@ -156,8 +159,9 @@ extern const fileaccess_t
 extern const fileaccess_t
     temp_file_access; // state is /tmp directory descriptor
 
-extern uint8_t fileaccess_connectors_count;
 extern fileaccess_connector_t fileaccess_connectors[(FA_COUNT-1)*FA_COUNT];
+
+void fileaccess_log_error(logger_t *logger, file_operation_error_t error);
 
 fileaccess_state_t fileaccess_init(const fileaccess_t *fileaccess, void *data);
 bool fileaccess_deinit(fileaccess_state_t state);
