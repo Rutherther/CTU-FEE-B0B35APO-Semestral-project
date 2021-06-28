@@ -108,7 +108,7 @@ font_t font_family_create(font_descriptor_t def, font_family_t *family) {
 size2d_t font_measure_text(font_t *font, char *text) {
   size2d_t size = {.x = 0, .y = font->size};
 
-  double scale = (double)font->size / font->font.height;
+  double scale = (double)font->size / font_family_get_descriptor(font)->height;
   size_t len = strlen(text);
   for (int i = 0; i < len && *text != '\0'; i++) {
     uint16_t bytes;
@@ -116,7 +116,7 @@ size2d_t font_measure_text(font_t *font, char *text) {
     text += bytes;
 
     font_character_t character = font_get_character(font, c);
-    size.x += character.width * scale;
+    size.x += character.width * scale + font->char_spacing;
   }
 
   return size;
