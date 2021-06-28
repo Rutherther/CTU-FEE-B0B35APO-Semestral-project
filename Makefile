@@ -79,6 +79,9 @@ run-image-viewer: copy-executable
 run-text-viewer: copy-executable
 	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/text-viewer $(ARG)
 
+docs:
+	doxygen DOXYGEN
+
 clean:
 	@make -C image-viewer clean
 	@make -C text-viewer clean
