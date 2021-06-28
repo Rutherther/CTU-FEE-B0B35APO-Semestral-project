@@ -1,4 +1,5 @@
 #include "window_browser.h"
+#include "dialog.h"
 #include "display_utils.h"
 #include "file_access.h"
 #include "file_open.h"
@@ -130,7 +131,7 @@ static void *browser_window_construct(window_t *window, void *state) {
 
   // containers init
   // group components init
-  component_t path_text = gui_text_create(&bstate->text_state, 3, 3, 0, 0);
+  component_t path_text = gui_text_create(&bstate->text_state, 3, 3, bstate->gui->size.x, 0);
   component_t line_component = gui_line_create(&WHITE_PIXEL, 0, path_text.height + path_text.y + 3, 1000, 1);
   
   gui_group_container_add_component(&window->containers[1], path_text);
