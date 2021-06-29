@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
   rgb_led_set_green(&led, LED_LEFT);
   rgb_led_set_green(&led, LED_RIGHT);
-  image_viewer_t viewer = image_viewer_create(argv[1], &display, &logger, ledstrip);
+  image_viewer_t viewer = image_viewer_create(argv[1], &display, &logger, ledstrip, led);
   rgb_led_clear(&led, LED_LEFT);
   rgb_led_clear(&led, LED_RIGHT);
 

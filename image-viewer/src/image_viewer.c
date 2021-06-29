@@ -8,6 +8,7 @@
 #include "image_loader.h"
 #include "coords.h"
 #include "mzapo_led_strip.h"
+#include "mzapo_rgb_led.h"
 #include <time.h>
 #include <stdlib.h>
 
@@ -22,7 +23,7 @@ void loader_callback(void *state, double p) {
   ledstrip_progress_bar_step(ledstrip, p * LED_STRIP_COUNT);
 }
 
-image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t *logger, mzapo_ledstrip_t ledstrip) {
+image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t *logger, mzapo_ledstrip_t ledstrip, mzapo_rgb_led_t rgb_leds) {
 
   image_viewer_t viewer = {
     .display = display,
@@ -32,6 +33,7 @@ image_viewer_t image_viewer_create(char *filename, display_t *display, logger_t 
     .display_region = image_region_create(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT),
     .image_region = image_region_create(0, 0, 0, 0),
     .ledstrip = ledstrip,
+    .rgb_leds = rgb_leds
   };
 
   viewer.error = image_loader_load(&viewer.image, loader_callback, &ledstrip);
@@ -236,10 +238,19 @@ void command_handler_change_mode(void *data, int amount) {
   logger_debug(viewer->logger, __FILE__, __FUNCTION__, __LINE__,
                "Changing mode");
 
+
   uint8_t mode = viewer->mode;
   mode++;
   if (mode >= MOD_COUNT) {
     mode %= MOD_COUNT;
+  }
+
+  if (mode == MOD_IMAGE) {
+    rgb_led_set_green(&viewer->rgb_leds, LED_LEFT);
+    rgb_led_set_green(&viewer->rgb_leds, LED_RIGHT);
+  } else {
+    rgb_led_clear(&viewer->rgb_leds, LED_LEFT);
+    rgb_led_clear(&viewer->rgb_leds, LED_RIGHT);
   }
 
   viewer->mode = mode;

@@ -6,6 +6,7 @@
 #include "image.h"
 #include "logger.h"
 #include "mzapo_led_strip.h"
+#include "mzapo_rgb_led.h"
 #include <stdbool.h>
 
 typedef enum {
@@ -29,6 +30,7 @@ typedef struct {
   bool running;
 
   mzapo_ledstrip_t ledstrip;
+  mzapo_rgb_led_t rgb_leds;
 
   logger_t *logger;
   image_error_t error;
@@ -44,7 +46,8 @@ typedef struct {
  * @return image_viewer_t
  */
 image_viewer_t image_viewer_create(char *filename, display_t *display,
-                                   logger_t *logger, mzapo_ledstrip_t ledstrip);
+                                   logger_t *logger, mzapo_ledstrip_t ledstrip,
+                                   mzapo_rgb_led_t rgb_leds);
 
 /**
  * @brief Clean up image viewer data
