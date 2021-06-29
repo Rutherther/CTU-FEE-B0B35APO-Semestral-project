@@ -16,30 +16,6 @@
 #include "mzapo_sdl.h"
 #endif
 
-// TODO: okna
-//DONE   initial - lokální fs nebo nějaký unmounted
-//DONE   browser - ukazuje current složku, v ní soubory a info o nich, nahoře název
-//DONE     složky
-//TODO   contextmenu - ukazuje info o souboru a jeho nabídku na smazání, přesunutí,
-//     zkopírování, zobrazení v textovém move/copy - slouží podobně jako initial a
-//     browser, ale k přesunutí nebo
-//     zkopírování objektu
-//DONE   dialog
-
-// TODO: dokončit dokumentaci
-
-// TODO: controls - textový soubor
-// TODO: lepší controls v prohlížeči textu
-
-// periferie v průzkumníku 10:30 - 11:30
-// učesat kód 11 - 14 (15)
-// controls 12
-// context menu 15 - 16
-
-// DEADLINE kód 16:00
-// DEADLINE dokumentace 23:00
-// dokončit dokumentaci a vygenerovat doxygen - úterý
-
 typedef enum {
   ERROR_SUCCESS,
   ERROR_PHERIPHERALS,
