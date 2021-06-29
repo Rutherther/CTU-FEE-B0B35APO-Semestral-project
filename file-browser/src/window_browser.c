@@ -93,6 +93,7 @@ static void command_handler_contextmenu(void *state, int amount) {
     if (file->type != FT_FILE) {
       logger_warn(bstate->gui->logger, __FILE__, __FUNCTION__, __LINE__,
                   "Context menus are for files only");
+      dialog_info_show(bstate->gui, bstate->font, "WARNING", "Contextmenu is for files only.");
       return;
     }
 
