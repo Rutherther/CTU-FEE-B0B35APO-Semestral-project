@@ -1,6 +1,8 @@
 #include "window_browser.h"
 #include "dialog.h"
+#include "file_browser_utils.h"
 #include "display_utils.h"
+#include "gui_list_table.h"
 #include "file_access.h"
 #include "file_open.h"
 #include "font.h"
@@ -17,44 +19,10 @@
 #include "path.h"
 #include "renderer.h"
 #include "keyboard_const.h"
+#include "window_browser_items.h"
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
-
-#define COLUMNS_COUNT 4
-#define MAX_COLUMN_CHARS 200
-#define STDERR_BUFFER_LENGTH 3000
-
-char *column_names[] ={"NAME", "TYPE", "SIZE", "MODIFIED"};
-
-typedef struct {
-  bool running;
-  gui_t *gui;
-
-  container_t *list_container;
-  component_t *line_component;
-  window_t *browser_window;
-
-  font_t *font;
-
-  gui_list_command_state_t click_state;
-  text_t text_state;
-
-  directory_t *current_directory;
-  fileaccess_state_t state;
-
-  uint16_t column_widths[COLUMNS_COUNT];
-} browser_window_state_t;
-
-static bool browser_window_list_render_item(void *state, uint32_t index,
-                                            renderer_t *renderer, int16_t beg_x,
-                                            int16_t beg_y,
-                                            display_pixel_t color);
-
-static bool browser_window_list_render_header(void *state, uint32_t index,
-                                              renderer_t *renderer,
-                                              int16_t beg_x, int16_t beg_y,
-                                              display_pixel_t color);
 
 static void browser_window_item_clicked(container_t *container, void *state,
                                         uint32_t selected_index);
@@ -62,8 +30,6 @@ static void browser_window_item_clicked(container_t *container, void *state,
 static void *browser_window_construct(window_t *window, void *state);
 static bool browser_window_running(void *state);
 static void browser_window_job(void *state);
-
-static char *browser_get_column_data(file_t *file, uint16_t column, char* out);
 
 gui_container_info_t window_browser_containers[] = {
     {.type = CONT_TABLE,
@@ -164,6 +130,11 @@ static void *browser_window_construct(window_t *window, void *state) {
   bstate->list_container = &window->containers[0];
   bstate->browser_window = window;
 
+  bstate->table.columns_count = COLUMNS_COUNT;
+  bstate->table.columns_names = column_names;
+  bstate->table.columns_widths = bstate->column_widths;
+  bstate->table.get_data = browser_get_column_data;
+
   bstate->click_state.container = bstate->list_container;
   bstate->click_state.state = state;
   bstate->click_state.clicked = browser_window_item_clicked;
@@ -203,54 +174,14 @@ static void *browser_window_construct(window_t *window, void *state) {
   return state;
 }
 
-static void browser_window_item_clicked(container_t *container, void *state,
-                                        uint32_t selected_index) {
-
-  browser_window_state_t *bstate = (browser_window_state_t *)state;
-  if (bstate->gui->active_window != bstate->browser_window) {
-    return;
-  }
-
-  logger_t *logger = bstate->gui->logger;
-
-  file_t current_file = bstate->current_directory->files[selected_index];
-
-  if (current_file.type == FT_FILE) {
-    // open
-    logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Opening file %s",
-                current_file.name);
-    opened_file_state_t opened = file_open(&current_file, browser_exec_options, bstate->state);
-    if (opened.error != FILOPER_SUCCESS) {
-      fileaccess_log_error(logger, opened.error);
-      dialog_info_show(bstate->gui, bstate->font, "Could not open file", fileaccess_get_error_text(opened.error));
-    } else if (opened.executed) {
-      if (opened.ended_with_error) {
-        logger_error(logger, __FILE__, __FUNCTION__, __LINE__,
-                     "Executed file returned unhealthy signal %d", opened.executing_file.output_signal);
-
-        char buff[STDERR_BUFFER_LENGTH];
-        int chars_read = read(opened.executing_file.stderr_pipe[READ_END], buff, STDERR_BUFFER_LENGTH);
-        buff[chars_read] = '\0';
-
-        logger_error(logger, __FILE__, __FUNCTION__, __LINE__, "Returned stderr: %s", buff);
-        dialog_info_show(bstate->gui, bstate->font, "Exited with nonzero code", buff);
-      } else {
-        logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Successfully returned from executing file.");
-      }
-
-      executing_file_destroy(&opened.executing_file);
-    } else {
-      logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
-                  "Successfully returned without executing anything.");
-    }
-  } else if (current_file.type == FT_FOLDER || current_file.type == FT_OTHER) {
+static void browser_window_handle_folder_clicked(browser_window_state_t *bstate, file_t *current_file, logger_t *logger) {
     rgb_led_set_timeout(bstate->gui->pheripherals->rgb_leds, LED_LEFT, 0, 100,
                         100, 300);
     rgb_led_set_timeout(bstate->gui->pheripherals->rgb_leds, LED_RIGHT, 0, 100,
                         100, 300);
 
-    char new_dir_path[path_join_memory_size(bstate->current_directory->path, current_file.name)];
-    path_join(bstate->current_directory->path, current_file.name, new_dir_path);
+    char new_dir_path[path_join_memory_size(bstate->current_directory->path, current_file->name)];
+    path_join(bstate->current_directory->path, current_file->name, new_dir_path);
 
     directory_or_error_t data = fileaccess_directory_list(bstate->state, new_dir_path);
     if (data.error) {
@@ -266,48 +197,29 @@ static void browser_window_item_clicked(container_t *container, void *state,
 
       logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Opening directory %s", bstate->current_directory->path);
     }
-  }
 }
 
-static bool browser_window_list_render_item(void *state, uint32_t index,
-                                            renderer_t *renderer, int16_t beg_x,
-                                            int16_t beg_y,
-                                            display_pixel_t color) {
+static void browser_window_item_clicked(container_t *container, void *state,
+                                        uint32_t selected_index) {
+
   browser_window_state_t *bstate = (browser_window_state_t *)state;
+  if (bstate->gui->active_window != bstate->browser_window) {
+    return;
+  }
+
   logger_t *logger = bstate->gui->logger;
-  if (index >= bstate->current_directory->files_count) {
-    logger_error(logger, __FILE__, __FUNCTION__, __LINE__, "Tried to reach item out of index");
-    return false;
+
+  file_t current_file = bstate->current_directory->files[selected_index];
+
+  if (current_file.type == FT_FILE) {
+    logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Opening file %s",
+                current_file.name);
+    opened_file_state_t opened = file_open(&current_file, browser_exec_options, bstate->state);
+    file_browser_handle_opened_file(opened, bstate->gui, bstate->font);
+
+  } else if (current_file.type == FT_FOLDER || current_file.type == FT_OTHER) {
+    browser_window_handle_folder_clicked(bstate, &current_file, logger);
   }
-  file_t file = bstate->current_directory->files[index];
-
-  uint16_t offset = beg_x;
-  char tmp[MAX_COLUMN_CHARS];
-  for (int i = 0; i < COLUMNS_COUNT; i++) {
-    char *data = browser_get_column_data(&file, i, tmp);
-    renderer_write_string(renderer, offset, beg_y, 0, bstate->font, data,
-                          color);
-    offset += bstate->column_widths[i];
-  }
-
-  return true;
-}
-
-static bool browser_window_list_render_header(void *state, uint32_t index,
-                                              renderer_t *renderer,
-                                              int16_t beg_x, int16_t beg_y,
-                                              display_pixel_t color) {
-  browser_window_state_t *bstate = (browser_window_state_t *)state;
-  renderer_render_rectangle(renderer, beg_x - 3, beg_y + bstate->font->size,
-                            10000, 1, color);
-
-  uint16_t offset = beg_x;
-
-  for (int i = 0; i < COLUMNS_COUNT; i++) {
-    renderer_write_string(renderer, offset, beg_y, 0, bstate->font, column_names[i], color);
-    offset += bstate->column_widths[i];
-  }
-  return true;
 }
 
 static bool browser_window_running(void *state) {
@@ -318,22 +230,9 @@ static bool browser_window_running(void *state) {
 static void browser_window_job(void *state) {
   browser_window_state_t *bstate = (browser_window_state_t *)state;
 
-  char tmp[MAX_COLUMN_CHARS];
-  for (int i = 0; i < COLUMNS_COUNT; i++) {
-    uint16_t max_size = font_measure_text(bstate->font, column_names[i]).x;
-    for (int j = 0; j < bstate->current_directory->files_count; j++) {
-      char *data = browser_get_column_data(&bstate->current_directory->files[j], i, tmp);
-      if (data == NULL) {
-        continue;
-      }
-      uint16_t current_size = font_measure_text(bstate->font, data).x;
-
-      if (current_size > max_size) {
-        max_size = current_size;
-      }
-    }
-    bstate->column_widths[i] = max_size + 50;
-  }
+  table_update_widths(&bstate->table, bstate->font,
+                      bstate->current_directory->files, sizeof(file_t),
+                      bstate->current_directory->files_count);
 
   bstate->line_component->y = bstate->font->size + 5;
   bstate->list_container->y = bstate->line_component->y / 2;
@@ -348,57 +247,3 @@ static void browser_window_job(void *state) {
   }
 }
 
-#define KiB 1024ULL
-#define MiB KiB*KiB
-#define GiB KiB*KiB*KiB
-#define TiB KiB*KiB*KiB*KiB
-
-static char *browser_get_column_data(file_t *file, uint16_t column, char *out) {
-  switch (column) {
-  case 0:
-    return file->name;
-  case 1:
-    switch (file->type) {
-    case FT_FILE:
-      return "FILE";
-    case FT_FOLDER:
-      return "DIR";
-    case FT_OTHER:
-      return "OTHER";
-    case FT_UNKNOWN:
-      return "UNKNOWN";
-    }
-    break;
-  case 2:
-    // get size
-    {
-      uint64_t size = file->size;
-      double transformed = size;
-      char *append = "B";
-
-      if (size > TiB) {
-        transformed /= TiB;
-        append = "TiB";
-      } else if (size > GiB) {
-        transformed /= GiB;
-        append = "GiB";
-      } else if (size > MiB) {
-        transformed /= MiB;
-        append = "MiB";
-      } else if (size > KiB) {
-        transformed /= KiB;
-        append = "KiB";
-      }
-
-      sprintf(out, "%.2f %s", transformed, append);
-      return out;
-    }
-  case 3:
-    // date modified
-
-    strftime(out, MAX_COLUMN_CHARS, "%c", localtime(&file->modify_time));
-    return out;
-  }
-
-  return NULL;
-}
