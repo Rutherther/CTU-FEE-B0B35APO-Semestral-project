@@ -332,7 +332,7 @@ static char *browser_get_column_data(file_t *file, uint16_t column, char *out) {
         transformed /= KiB;
         append = "KiB";
       }
-      
+
       sprintf(out, "%.2f %s", transformed, append);
       return out;
     }

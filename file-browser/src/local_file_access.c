@@ -55,14 +55,18 @@ static file_operation_error_t file_get_information(void *malloced,
   int status = stat(full_path, &stats);
 
   if (status == -1) {
-    //free(new);
-    //return file_operation_error_from_errno(errno);
+    file.size = 0;
+    file.gid = 0;
+    file.uid = 0;
+    file.permissions = 0;
+    file.modify_time = 0;
+  } else {
+    file.size = stats.st_size;
+    file.gid = stats.st_gid;
+    file.uid = stats.st_uid;
+    file.permissions = stats.st_mode;
+    file.modify_time = stats.st_mtim.tv_sec;
   }
-
-  file.size = stats.st_size;
-  file.gid = stats.st_gid;
-  file.uid = stats.st_uid;
-  file.permissions = stats.st_mode;
 
   file_t *stored = malloced + *file_offset;
   *stored = file;
@@ -98,7 +102,7 @@ directory_or_error_t local_fileaccess_directory_list(fileaccess_state_t state,
   realpath(path, show_path);
 
   uint32_t files_count = 0;
-  uint64_t size = directory_get_needed_bytes(path, &files_count, dirptr);
+  uint64_t size = directory_get_needed_bytes(show_path, &files_count, dirptr);
 
   uint64_t files_offset = sizeof(directory_t) + strlen(show_path) + 1;
   uint64_t names_offset = files_count * sizeof(file_t) + files_offset;
