@@ -150,7 +150,6 @@ static void initial_window_job(void *state) {
   initial_window_state_t *initial_window_state =
       (initial_window_state_t *)state;
 
-  initial_window_state->list_container->inner.list.scroll_x = 0;
   gui_list_container_set_item_height(initial_window_state->list_container,
                                      initial_window_state->font.size);
   // do nothing?
