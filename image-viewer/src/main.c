@@ -29,10 +29,57 @@
 #endif
 
 typedef enum {
-  SUCCESS,
-  TOO_FEW_ARGUMENTS,
-  IMAGE_ERROR
+  ERROR_SUCCESS,
+  ERROR_TOO_FEW_ARGUMENTS,
+  ERROR_IMAGE_ERROR
 } error_t;
+
+error_t image_viewer_start(logger_t *logger, char *file_name, mzapo_rgb_led_t led) {
+  struct termios oldstdin;
+
+  display_t display = mzapo_create_display();
+
+  logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
+              "Image %s will be loaded.", file_name);
+
+  mzapo_ledstrip_t ledstrip = mzapo_create_ledstrip();
+
+  rgb_led_set_green(&led, LED_LEFT);
+  rgb_led_set_green(&led, LED_RIGHT);
+  image_viewer_t viewer = image_viewer_create(file_name, &display, logger, ledstrip, led);
+  rgb_led_clear(&led, LED_LEFT);
+  rgb_led_clear(&led, LED_RIGHT);
+
+  if (viewer.error != IMERR_SUCCESS) {
+    image_error_log(logger, viewer.error);
+    rgb_led_set_red(&led, LED_RIGHT);
+    return ERROR_IMAGE_ERROR;
+  }
+
+  logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
+              "Loaded image of size %d %d", viewer.image.width,
+              viewer.image.height);
+
+  logger_debug(logger, __FILE__, __FUNCTION__, __LINE__,
+               "Displaying image...", file_name);
+
+  image_viewer_display_image(&viewer);
+
+  logger_debug(logger, __FILE__, __FUNCTION__, __LINE__,
+               "Starting image viewer...", file_name);
+  file_set_nonblocking(STDIN_FILENO, &oldstdin);
+  image_viewer_start_loop(&viewer, mzapo_get_knobs_address());
+
+  logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
+              "Cleaning up...", file_name);
+
+  display_deinit(&display);
+  image_viewer_destroy(&viewer);
+
+  file_set_blocking(STDIN_FILENO, &oldstdin);
+  ledstrip_clear(&ledstrip);
+  return ERROR_SUCCESS;
+}
 
 int main(int argc, char *argv[])
 {
@@ -52,72 +99,24 @@ int main(int argc, char *argv[])
   }
 
   mzapo_rgb_led_t led = mzapo_create_rgb_led();
-
-  struct termios oldstdin;
-  file_set_nonblocking(STDIN_FILENO, &oldstdin);
-
   logger_t logger = logger_create(LOG_DEBUG, stdout, stdout, stderr, stderr, NULL);
 
   if (argc < 2) {
     logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Not enough arguments.");
     rgb_led_set_red(&led, LED_LEFT);
-    return TOO_FEW_ARGUMENTS;
+    return ERROR_TOO_FEW_ARGUMENTS;
   }
 
-  logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Initializing display...", argv[1]);
-  display_t display = mzapo_create_display();
-  logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Display initialized...", argv[1]);
-
-  logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Image %s will be loaded.", argv[1]);
-
-  mzapo_ledstrip_t ledstrip = mzapo_create_ledstrip();
-
-  rgb_led_set_green(&led, LED_LEFT);
-  rgb_led_set_green(&led, LED_RIGHT);
-  image_viewer_t viewer = image_viewer_create(argv[1], &display, &logger, ledstrip, led);
-  rgb_led_clear(&led, LED_LEFT);
-  rgb_led_clear(&led, LED_RIGHT);
-
-  if (viewer.error != IMERR_SUCCESS) {
-    image_error_log(&logger, viewer.error);
-    rgb_led_set_red(&led, LED_RIGHT);
-    return IMAGE_ERROR;
-  }
-
-  logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Loaded image of size %d %d", viewer.image.width,
-              viewer.image.height);
-
-  logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
-               "Displaying image...", argv[1]);
-
-  image_viewer_display_image(&viewer);
-
-  logger_debug(&logger, __FILE__, __FUNCTION__, __LINE__,
-               "Starting image viewer...", argv[1]);
-  image_viewer_start_loop(&viewer, mzapo_get_knobs_address());
-
-  logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Cleaning up...", argv[1]);
-
-  display_deinit(&display);
-  image_viewer_destroy(&viewer);
-
-  file_set_blocking(STDIN_FILENO, &oldstdin);
-
+  error_t error = image_viewer_start(&logger, argv[1], led);
   /* Release the lock */
   serialize_unlock();
 
   logger_info(&logger, __FILE__, __FUNCTION__, __LINE__, "Application quit",
               argv[1]);
 
-  ledstrip_clear(&ledstrip);
 
 #ifdef COMPUTER
   mzapo_sdl_deinit();
 #endif
-  return SUCCESS;
+  return error;
 }
