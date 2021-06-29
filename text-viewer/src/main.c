@@ -21,11 +21,53 @@ typedef enum {
   ERROR_PHERIPHERALS,
 } error_t;
 
+error_t text_viewer_start(logger_t *logger, char* file_name, mzapo_rgb_led_t rgb_leds) {
+  struct termios oldstdin;
+  display_t display = mzapo_create_display();
+  mzapo_ledstrip_t ledstrip = mzapo_create_ledstrip();
+  void* knobs = mzapo_get_knobs_address();
+
+  if (!mzapo_check_pheripherals(&ledstrip, &rgb_leds, &display, &knobs)) {
+    logger_error(logger, __FILE__, __FUNCTION__, __LINE__, "Could not initialize some of the pheripherals.");
+    rgb_led_set_red(&rgb_leds, LED_LEFT);
+    return ERROR_PHERIPHERALS;
+  }
+
+  mzapo_pheripherals_t pheripherals = mzapo_pheripherals_create(&ledstrip, &rgb_leds, &display, &knobs);
+
+  font_t font = font_family_create(font_wTahoma_22, &fontFamily_wTahoma);
+  font.size = 20;
+  font.char_spacing = 2;
+
+  text_viewer_t text_viewer = text_viewer_create(file_name, pheripherals, logger, font);
+
+  logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
+              "Loading file");
+  file_error_t error = text_viewer_load_file(&text_viewer);
+  if (error != FILER_SUCCESS) {
+    file_error_log(logger, error);
+    rgb_led_set_red(&rgb_leds, LED_RIGHT);
+    return ERROR_CANT_OPEN_FILE;
+  }
+
+  file_set_nonblocking(STDIN_FILENO, &oldstdin);
+  logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
+              "Starting text viewer");
+  text_viewer_start_loop(&text_viewer);
+  logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
+              "Closing application");
+
+  text_viewer_destroy(&text_viewer);
+  mzapo_pheripherals_clear(&pheripherals);
+
+  file_set_blocking(STDIN_FILENO, &oldstdin);
+  return ERROR_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   #ifdef COMPUTER
   mzapo_sdl_init();
   #endif
-  struct termios oldstdin;
 
   logger_t logger =
       logger_create(LOG_DEBUG, stdout, stdout, stderr, stderr, NULL);
@@ -53,44 +95,7 @@ int main(int argc, char *argv[]) {
     return ERROR_NOT_ENOUGH_ARGUMENTS;
   }
 
-  display_t display = mzapo_create_display();
-  mzapo_ledstrip_t ledstrip = mzapo_create_ledstrip();
-  void* knobs = mzapo_get_knobs_address();
-
-  if (!mzapo_check_pheripherals(&ledstrip, &rgb_leds, &display, &knobs)) {
-    logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Could not initialize some of the pheripherals.");
-    rgb_led_set_red(&rgb_leds, LED_LEFT);
-    return ERROR_PHERIPHERALS;
-  }
-
-  mzapo_pheripherals_t pheripherals = mzapo_pheripherals_create(&ledstrip, &rgb_leds, &display, &knobs);
-
-  font_t font = font_family_create(font_wTahoma_22, &fontFamily_wTahoma);
-  font.size = 20;
-  font.char_spacing = 2;
-
-  text_viewer_t text_viewer = text_viewer_create(argv[1], pheripherals, &logger, font);
-
-  logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Loading file");
-  file_error_t error = text_viewer_load_file(&text_viewer);
-  if (error != FILER_SUCCESS) {
-    file_error_log(&logger, error);
-    rgb_led_set_red(&rgb_leds, LED_RIGHT);
-    return ERROR_CANT_OPEN_FILE;
-  }
-
-  file_set_nonblocking(STDIN_FILENO, &oldstdin);
-  logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Starting text viewer");
-  text_viewer_start_loop(&text_viewer);
-  logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
-              "Closing application");
-
-  text_viewer_destroy(&text_viewer);
-  display_deinit(&display);
-
-  file_set_blocking(STDIN_FILENO, &oldstdin);
+  error_t rerror = text_viewer_start(&logger, argv[1], rgb_leds);
 
   serialize_unlock();
   
@@ -100,5 +105,5 @@ int main(int argc, char *argv[]) {
 #ifdef COMPUTER
   mzapo_sdl_deinit();
 #endif
-  return ERROR_SUCCESS;
+  return rerror;
 }

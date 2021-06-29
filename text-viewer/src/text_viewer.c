@@ -1,6 +1,7 @@
 #include "text_viewer.h"
 #include "direction.h"
 #include "display_utils.h"
+#include "text_viewer_handlers.h"
 #include "gui.h"
 #include "gui_component_line.h"
 #include "gui_component_text.h"
@@ -42,79 +43,6 @@ void text_viewer_destroy(text_viewer_t *text_viewer) {
       text_viewer->multiline_text->text != NULL) {
     free(text_viewer->multiline_text->text);
   }
-}
-
-file_error_t file_error_from_errno() {
-  switch (errno) {
-  case ENOENT:
-    return FILER_NOT_FOUND;
-  case EACCES:
-    return FILER_NO_PERMISSIONS;
-  default:
-    return FILER_FILE_CANT_OPEN;
-  }
-}
-
-file_error_t text_viewer_load_file(text_viewer_t *text_viewer) {
-  FILE *file = fopen(text_viewer->path, "r");
-
-  if (file == NULL) {
-    return file_error_from_errno();
-  }
-
-  fseek(file, 0, SEEK_END);
-  long fsize = ftell(file);
-  fseek(file, 0, SEEK_SET);
-
-  char *data = malloc(sizeof(char) * (fsize + 2));
-  data[fsize - 1] = '\0';
-  data[fsize] = '\0';
-  data[fsize + 1] = '\0';
-
-  if (data == NULL) {
-    return FILER_UNKNOWN;
-  }
-
-  long read = 0;
-  const int perc = 5;
-  const int iters = 100 / perc;
-  for (int i = 0; i < iters; i++) {
-    long to_read = fsize / iters;
-    if (to_read == 0) {
-      i = iters - 1;
-    }
-
-    if (i == iters - 1) {
-      to_read = fsize - read - 1;
-    }
-
-    if (to_read == 0 || fsize == read) {
-      break;
-    }
-
-    long result = fread(data + read, sizeof(char), to_read, file);
-    read += result;
-
-    if (result != to_read) {
-      fclose(file);
-      return FILER_CANNOT_READ;
-    }
-
-    ledstrip_progress_bar_step(text_viewer->pheripherals.ledstrip, i * perc);
-  }
-
-  fclose(file);
-
-  multiline_text_t *text =
-      gui_multiline_text_create(&text_viewer->font, WHITE_PIXEL, data);
-  if (text == NULL) {
-    return FILER_UNKNOWN;
-  }
-
-  text_viewer->multiline_text = text;
-
-  ledstrip_clear(text_viewer->pheripherals.ledstrip);
-  return FILER_SUCCESS;
 }
 
 static void text_viewer_init_gui(text_viewer_t *text_viewer,
@@ -180,70 +108,6 @@ static component_t *text_viewer_gui_add_text_view(text_viewer_t *text_viewer,
   return gui_one_container_set_component(view_container, text_view);
 }
 
-static void command_handler_move(void *state, direction_t direction,
-                                 int amount) {
-  component_t *text_view = (component_t *)state;
-  if (text_view->focused) {
-    int32_t x = 0;
-    int32_t y = 0;
-    direction_move_xy(direction, &x, &y, amount);
-    gui_text_view_scroll(text_view, x, y);
-  }
-}
-
-static void command_handler_move_down(void *state, int amount) {
-  command_handler_move(state, DOWN, amount);
-}
-
-static void command_handler_move_up(void *state, int amount) {
-  command_handler_move(state, UP, amount);
-}
-
-static void command_handler_move_left(void *state, int amount) {
-  command_handler_move(state, LEFT, amount);
-}
-static void command_handler_move_right(void *state, int amount) {
-  command_handler_move(state, RIGHT, amount);
-}
-
-static void command_handler_reset(void *state, int amount) {
-  gui_text_view_reset_scroll((component_t *)state);
-}
-
-static void command_handler_full_scroll(void *state, int amount) {
-  gui_text_view_full_scroll((component_t *)state);
-}
-
-static void command_handler_zoom_in(void *state, int amount) {
-  component_t *component = (component_t *)state;
-  multiline_text_t* text = (multiline_text_t*) (component)->state;
-  uint16_t old_size = text->font->size;
-
-  amount = amount > 1 ? 1 : -1;
-  text->font->size += amount;
-  if (text->font->size == 0) {
-    text->font->size = 1;
-  }
-
-  component->y += amount * (component->y / (old_size + text->font->line_spacing));
-}
-
-static void command_handler_zoom_out(void *state, int amount) {
-  command_handler_zoom_in(state, -amount);
-}
-
-static void command_handler_zoom_reset(void *state, int amount) {
-  component_t *component = (component_t *)state;
-  multiline_text_t *text = (multiline_text_t *)(component)->state;
-  uint16_t old_size = text->font->size;
-  text->font->size = text->font->font.height;
-
-
-  amount = text->font->size - old_size;
-  component->y +=
-      amount * (component->y / (old_size + text->font->line_spacing));
-}
-
 component_t gui_text_view_create(gui_t *gui, multiline_text_t *text, int16_t x,
                                  int16_t y) {
   component_t text_view = gui_component_create(x, y, 1, 1, gui_text_view_render,
@@ -252,43 +116,6 @@ component_t gui_text_view_create(gui_t *gui, multiline_text_t *text, int16_t x,
   text_view.focusable = true;
 
   return text_view;
-}
-
-void gui_text_view_register_commands(gui_t *gui, component_t *text_view) {
-  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_LEFT,
-                    command_handler_move_left, text_view);
-  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_RIGHT,
-                    command_handler_move_right, text_view);
-  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_DOWN,
-                    command_handler_move_down, text_view);
-  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_UP,
-                    command_handler_move_up, text_view);
-  commands_register(gui->commands, IN_KEYBOARD, 'r', command_handler_reset,
-                    text_view);
-  commands_register(gui->commands, IN_KEYBOARD, 't',
-                    command_handler_full_scroll, text_view);
-  commands_register(gui->commands, IN_KEYBOARD, 'f',
-                    command_handler_zoom_reset, text_view);
-
-  commands_register(gui->commands, IN_ENCODER_ROTATE,
-                    ROTATION_ENCODER_HORIZONTAL, command_handler_move_right,
-                    text_view);
-
-  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_ZOOM_IN,
-                    command_handler_zoom_in, text_view);
-  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_ZOOM_OUT,
-                    command_handler_zoom_out, text_view);
-
-  commands_register(gui->commands, IN_ENCODER_ROTATE, ROTATION_ENCODER_ZOOM,
-                    command_handler_zoom_in, text_view);
-
-  commands_register(gui->commands, IN_ENCODER_ROTATE, ROTATION_ENCODER_VERTICAL,
-                    command_handler_move_down, text_view);
-
-  commands_register(gui->commands, IN_ENCODER_CLICK, ROTATION_ENCODER_VERTICAL,
-                    command_handler_reset, text_view);
-  commands_register(gui->commands, IN_ENCODER_CLICK, ROTATION_ENCODER_ZOOM,
-                    command_handler_full_scroll, text_view);
 }
 
 void text_viewer_start_loop(text_viewer_t *text_viewer) {

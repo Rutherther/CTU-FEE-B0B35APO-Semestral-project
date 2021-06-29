@@ -4,28 +4,7 @@
 #include "gui.h"
 #include "gui_component_text_view.h"
 #include "mzapo_pheripherals.h"
-
-typedef enum {
-  FILER_SUCCESS,
-  FILER_NOT_FOUND,
-  FILER_NO_PERMISSIONS,
-  FILER_FILE_CANT_OPEN,
-  FILER_CANNOT_READ,
-  FILER_UNKNOWN,
-} file_error_t;
-
-typedef struct {
-  gui_t gui;
-  char *path;
-
-  mzapo_pheripherals_t pheripherals;
-  multiline_text_t *multiline_text;
-  logger_t *logger;
-
-  bool running;
-
-  font_t font;
-} text_viewer_t;
+#include "text_viewer_loader.h"
 
 /**
  * @brief Create text viewer struct
