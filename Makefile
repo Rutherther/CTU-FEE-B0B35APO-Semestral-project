@@ -71,7 +71,9 @@ copy-executable: all
 	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) killall gdbserver 1>/dev/null 2>/dev/null || true
 	ssh $(SSH_OPTIONS) $(TARGET_USER)@$(TARGET_IP) mkdir -p $(TARGET_DIR)
 	scp -r $(SSH_OPTIONS) $(BIN_DIR) $(TARGET_USER)@$(TARGET_IP):$(TARGET_DIR)/$(NAME)
+	scp -r $(SSH_OPTIONS) $(ROOT_DIR)/copy $(TARGET_USER)@$(TARGET_IP):$(TARGET_DIR)/$(NAME)
 	ssh $(SSH_OPTIONS) $(TARGET_USER)@$(TARGET_IP) mv $(TARGET_DIR)/bin/* $(TARGET_DIR)
+	ssh $(SSH_OPTIONS) $(TARGET_USER)@$(TARGET_IP) mv $(TARGET_DIR)/copy/* $(TARGET_DIR)
 
 run-image-viewer: copy-executable
 	ssh $(SSH_OPTIONS) -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/image-viewer $(ARG)

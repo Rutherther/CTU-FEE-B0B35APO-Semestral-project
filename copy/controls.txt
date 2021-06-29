@@ -1,0 +1,39 @@
+===================================================
+Text viewer (You are viewing this file in it)
+  - BASIC NAVIGATION
+    - h, j, k, l - move in file
+                   (left, down, up, right)
+    - z, x - zoom in or out
+  - TEXT VIEWER NAVIGATION
+    - y, u, i, p - move whole screen
+                   in direction
+                   (left, down, up, right)
+    - n - go to beginning of file
+    - m - go to end of file
+    - r - reset zoom to default
+  - CONTROL
+    - e - exit (Leave this window)
+
+===================================================
+Image viewer
+  - BASIC NAVIGATION
+    - Same as text viewer
+  - CONTROL
+    - e - exit
+    - m - change mode to move cursor
+          or whole image
+          (for whole image, RGB LEDs will be green)
+
+===================================================
+File browser
+  - BASIC NAVIGATION
+    - Same as text viewer and image viewer
+  - FILE BROWSER NAVIGATION
+    - Same as TEXT VIEWER NAVIGATION
+  - CONTROL
+    - e - exit / go back window
+    - v - confirm selection (open file, folder)
+    - c - show context menu of file
+===================================================
+
+That's everything, you may quit using 'e' now.

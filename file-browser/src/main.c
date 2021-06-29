@@ -26,12 +26,12 @@ typedef enum {
 
 static void exec_options_create_default() {
   exec_option_t options_arr[] = {
-      {.mime = "image/png", .program = "./bin/image-viewer"},
-      {.mime = "image/jpeg", .program = "./bin/image-viewer"},
-      {.mime = "image/x-portable-pixmap", .program = "./bin/image-viewer"},
-      {.mime = "image/x-portable-anymap", .program = "./bin/image-viewer"},
-      {.mime = "text/plain", .program = "./bin/text-viewer"},
-      {.mime = "text", .program = "./bin/text-viewer"},
+      {.mime = "image/png", .program = "./image-viewer"},
+      {.mime = "image/jpeg", .program = "./image-viewer"},
+      {.mime = "image/x-portable-pixmap", .program = "./image-viewer"},
+      {.mime = "image/x-portable-anymap", .program = "./image-viewer"},
+      {.mime = "text/plain", .program = "./text-viewer"},
+      {.mime = "text", .program = "./text-viewer"},
   };
   exec_options_t options = {
     .options_count = sizeof(options_arr) / sizeof(options_arr[0]),
