@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   rgb_led_clear(&rgb_leds, LED_RIGHT);
 
   if (argc < 2) {
-    logger_info(&logger, __FILE__, __FUNCTION__, __LINE__, "Not enough arguments");
+    logger_error(&logger, __FILE__, __FUNCTION__, __LINE__, "Not enough arguments");
     rgb_led_set_red(&rgb_leds, LED_LEFT);
     return ERROR_NOT_ENOUGH_ARGUMENTS;
   }
