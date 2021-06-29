@@ -9,9 +9,11 @@
 #include "gui_container_info.h"
 #include "gui_list_commands.h"
 #include "gui_component_line.h"
+#include "gui_list_pheripherals.h"
 #include "gui_window_info.h"
 #include "input.h"
 #include "logger.h"
+#include "mzapo_rgb_led.h"
 #include "path.h"
 #include "renderer.h"
 #include "keyboard_const.h"
@@ -242,6 +244,11 @@ static void browser_window_item_clicked(container_t *container, void *state,
                   "Successfully returned without executing anything.");
     }
   } else if (current_file.type == FT_FOLDER || current_file.type == FT_OTHER) {
+    rgb_led_set_timeout(bstate->gui->pheripherals->rgb_leds, LED_LEFT, 0, 100,
+                        100, 300);
+    rgb_led_set_timeout(bstate->gui->pheripherals->rgb_leds, LED_RIGHT, 0, 100,
+                        100, 300);
+
     char new_dir_path[path_join_memory_size(bstate->current_directory->path, current_file.name)];
     path_join(bstate->current_directory->path, current_file.name, new_dir_path);
 
@@ -332,6 +339,8 @@ static void browser_window_job(void *state) {
   bstate->list_container->y = bstate->line_component->y / 2;
   gui_list_container_set_item_height(bstate->list_container,
                                      bstate->font->size);
+
+  gui_list_ledstrip_update(bstate->list_container, bstate->gui->pheripherals);
 
   if (!bstate->running) {
     // cleanup

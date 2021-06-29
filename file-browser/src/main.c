@@ -138,6 +138,9 @@ int main(int argc, char *argv[]) {
               "Closing application");
 
   file_browser_destroy(&file_browser);
+  rgb_led_clear(pheripherals.rgb_leds, LED_LEFT);
+  rgb_led_clear(pheripherals.rgb_leds, LED_RIGHT);
+  ledstrip_clear(pheripherals.ledstrip);
   display_deinit(&display);
 
   file_set_blocking(STDIN_FILENO, &oldstdin);
