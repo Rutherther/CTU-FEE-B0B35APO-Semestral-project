@@ -1,8 +1,11 @@
 #include "window_initial.h"
+#include "SDL_video.h"
 #include "display_utils.h"
+#include "file_open.h"
 #include "font.h"
 #include "gui.h"
 
+#include "file_browser_utils.h"
 #include "gui_window_info.h"
 #include "gui_container_info.h"
 #include "gui_list_commands.h"
@@ -14,9 +17,14 @@
 #include <stdbool.h>
 
 #define INITIAL_WINDOW_LOCAL_INDEX 0
-#define INITIAL_WINDOW_MOUNT_INDEX 1
-#define INITIAL_WINDOW_OPTIONS_INDEX 2
+#define INITIAL_WINDOW_CONTROLS_ENG_INDEX 1
+#define INITIAL_WINDOW_CONTROLS_CZE_INDEX 2
 #define INITIAL_WINDOW_EXIT_INDEX 3
+
+#define INITIAL_WINDOW_ENTRIES 4
+
+#define CONTROLS_PATH "./controls.txt"
+#define CONTROLS_CZ_PATH "./controls_cz.txt"
 
 typedef struct {
   bool running;
@@ -79,13 +87,13 @@ static bool initial_window_list_render_item(void *state, uint32_t index,
   char *data;
   switch (index) {
   case INITIAL_WINDOW_LOCAL_INDEX:
-    data = "ROOT FILESYSTEM";
+    data = "SHOW ROOT FILESYSTEM";
     break;
-  case INITIAL_WINDOW_MOUNT_INDEX:
-    data = "MOUNTABLE DEVICES";
+  case INITIAL_WINDOW_CONTROLS_ENG_INDEX:
+    data = "SHOW CONTROLS (ENG) - J down, V confirm";
     break;
-  case INITIAL_WINDOW_OPTIONS_INDEX:
-    data = "OPTIONS";
+  case INITIAL_WINDOW_CONTROLS_CZE_INDEX:
+    data = "SHOW CONTROLS (CZE) - J dolů, V potvrzení";
     break;
   case INITIAL_WINDOW_EXIT_INDEX:
     data = "EXIT";
@@ -122,7 +130,7 @@ static void *initial_window_construct(window_t *window, void *state) {
   istate->click_state.window = window;
 
   // containers init
-  gui_container_info_init(istate->list_container, istate, 4, 5, 5);
+  gui_container_info_init(istate->list_container, istate, INITIAL_WINDOW_ENTRIES, 5, 5);
   istate->list_container->width = istate->gui->size.x - 20;
   istate->list_container->height = istate->gui->size.y - 20;
 
@@ -163,13 +171,17 @@ static void initial_window_item_clicked(container_t *container, void *state,
                 "Clicked local root filesystem");
     window_browser_open_local(istate->gui, &istate->font);
     break;
-  case INITIAL_WINDOW_MOUNT_INDEX:
-    logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
-                "Clicked mount");
-    break;
-  case INITIAL_WINDOW_OPTIONS_INDEX:
+  case INITIAL_WINDOW_CONTROLS_ENG_INDEX:
     logger_info(logger, __FILE__, __FUNCTION__, __LINE__,
                 "Clicked options");
+    opened_file_state_t opened_eng = file_open_mime_raw(CONTROLS_PATH, browser_exec_options, "text");
+    file_browser_handle_opened_file(opened_eng, istate->gui, &istate->font);
+    break;
+  case INITIAL_WINDOW_CONTROLS_CZE_INDEX:
+    logger_info(logger, __FILE__, __FUNCTION__, __LINE__, "Clicked options");
+    opened_file_state_t opened_cze =
+        file_open_mime_raw(CONTROLS_CZ_PATH, browser_exec_options, "text");
+    file_browser_handle_opened_file(opened_cze, istate->gui, &istate->font);
     break;
   case INITIAL_WINDOW_EXIT_INDEX:
     logger_info(logger, __FILE__, __FUNCTION__, __LINE__,

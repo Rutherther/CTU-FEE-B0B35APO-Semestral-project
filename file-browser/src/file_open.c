@@ -62,12 +62,6 @@ static opened_file_state_t file_open_mime(file_t *file, exec_options_t *options,
       return opened;
     }
   }
-
-  char *program = exec_options_get_program(options, mime);
-  if (program == NULL) {
-    return opened;
-  }
-
   char local_path[PATH_MAX];
   opened.error =
       fileaccess_file_get_local_path(state, file, local_path);
@@ -76,16 +70,7 @@ static opened_file_state_t file_open_mime(file_t *file, exec_options_t *options,
     return opened;
   }
 
-  file_prepare_before_open();
-  executing_file_error_t executing_or_error =
-      executing_file_execute(program, local_path);
-
-  if (executing_or_error.error != FILOPER_SUCCESS) {
-    opened.error = executing_or_error.error;
-    return opened;
-  }
-
-  return file_execute(&executing_or_error.file, base_mime != NULL ? OPENED_TEXT : OPENED_MIME);
+  return file_open_mime_raw(local_path, options, mime);
 }
 
 static opened_file_state_t file_open_text(file_t *file, exec_options_t *options,
@@ -130,4 +115,24 @@ opened_file_state_t file_open(file_t *file, exec_options_t *options, fileaccess_
   }
   // 3. text mime
   return file_open_text(file, options, state);
+}
+
+opened_file_state_t file_open_mime_raw(char *file, exec_options_t *options,
+                                       char *mime) {
+  opened_file_state_t opened = opened_file_create();
+  char *program = exec_options_get_program(options, mime);
+  if (program == NULL) {
+    return opened;
+  }
+
+  file_prepare_before_open();
+  executing_file_error_t executing_or_error =
+      executing_file_execute(program, file);
+
+  if (executing_or_error.error != FILOPER_SUCCESS) {
+    opened.error = executing_or_error.error;
+    return opened;
+  }
+
+  return file_execute(&executing_or_error.file, OPENED_MIME);
 }

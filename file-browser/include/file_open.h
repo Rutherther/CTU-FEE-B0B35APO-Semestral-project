@@ -26,4 +26,7 @@ typedef struct {
 opened_file_state_t file_open(file_t *file, exec_options_t *options,
                                  fileaccess_state_t state);
 
+opened_file_state_t file_open_mime_raw(char *file, exec_options_t *options,
+                                       char *mime);
+
 #endif // __FILE_OPEN_H__
