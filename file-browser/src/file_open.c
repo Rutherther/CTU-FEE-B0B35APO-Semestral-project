@@ -96,12 +96,12 @@ static opened_file_state_t file_open_text(file_t *file, exec_options_t *options,
 static opened_file_state_t file_open_executable(file_t *file, exec_options_t *options,
                                  fileaccess_state_t state) {
   opened_file_state_t opened = opened_file_create();
-  
+
   if (file->permissions & S_IEXEC) {
     // executable
     file_prepare_before_open();
     executing_file_or_error_t executing_or_error =
-        fileaccess_file_execute(state, file, "");
+        fileaccess_file_execute(state, file, NULL);
     if (executing_or_error.error) {
       opened.error = executing_or_error.error;
       return opened;
