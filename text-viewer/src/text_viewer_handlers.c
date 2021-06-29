@@ -1,5 +1,6 @@
 #include "text_viewer_handlers.h"
 #include "direction.h"
+#include "display_utils.h"
 #include "gui_component_text_view.h"
 #include "keyboard_const.h"
 #include "rotation_const.h"
@@ -13,6 +14,22 @@ static void command_handler_move(void *state, direction_t direction,
     direction_move_xy(direction, &x, &y, amount);
     gui_text_view_scroll(text_view, x, y);
   }
+}
+
+static void command_handler_jump(void *state, direction_t direction,
+                                 int amount) {
+  component_t *text_view = (component_t *)state;
+
+  if (direction == LEFT || direction == RIGHT) {
+    amount = DISPLAY_WIDTH * 0.6;
+  } else {
+    amount = DISPLAY_HEIGHT * 0.4;
+  }
+
+  int32_t x = 0;
+  int32_t y = 0;
+  direction_move_xy(direction, &x, &y, amount);
+  gui_text_view_scroll(text_view, x, y);
 }
 
 static void command_handler_move_down(void *state, int amount) {
@@ -30,6 +47,21 @@ static void command_handler_move_right(void *state, int amount) {
   command_handler_move(state, RIGHT, amount);
 }
 
+static void command_handler_jump_up(void *state, int amount) {
+  command_handler_jump(state, UP, amount);
+}
+
+static void command_handler_jump_down(void *state, int amount) {
+  command_handler_jump(state, DOWN, amount);
+}
+
+static void command_handler_jump_right(void *state, int amount) {
+  command_handler_jump(state, RIGHT, amount);
+}
+
+static void command_handler_jump_left(void *state, int amount) {
+  command_handler_jump(state, LEFT, amount);
+}
 static void command_handler_reset(void *state, int amount) {
   gui_text_view_reset_scroll((component_t *)state);
 }
@@ -77,11 +109,22 @@ void gui_text_view_register_commands(gui_t *gui, component_t *text_view) {
                     command_handler_move_down, text_view);
   commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_UP,
                     command_handler_move_up, text_view);
-  commands_register(gui->commands, IN_KEYBOARD, 'r', command_handler_reset,
+
+  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_JUMP_LEFT,
+                    command_handler_jump_left, text_view);
+  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_JUMP_RIGHT,
+                    command_handler_jump_right, text_view);
+  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_PAGE_DOWN,
+                    command_handler_jump_down, text_view);
+  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_PAGE_UP,
+                    command_handler_jump_up, text_view);
+
+  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_HOME, command_handler_reset,
                     text_view);
-  commands_register(gui->commands, IN_KEYBOARD, 't',
+
+  commands_register(gui->commands, IN_KEYBOARD, KEYBOARD_END,
                     command_handler_full_scroll, text_view);
-  commands_register(gui->commands, IN_KEYBOARD, 'f',
+  commands_register(gui->commands, IN_KEYBOARD, 'c',
                     command_handler_zoom_reset, text_view);
 
   commands_register(gui->commands, IN_ENCODER_ROTATE,

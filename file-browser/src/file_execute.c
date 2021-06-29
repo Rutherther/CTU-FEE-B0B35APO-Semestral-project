@@ -36,12 +36,12 @@ executing_file_error_t executing_file_execute(char *path, char *args) {
 
     execl(path, path, args, (char*)NULL);
 
+    // Is reached only in case of an error
     if (errno == EPERM) {
       fprintf(stderr, "Could not execute file: file is not executable\r\n");
       exit(errno);
     }
 
-      // Is reached only in case of an error
     fprintf(
           stderr, "Could not execute file \"%s %s\": %s\r\n", path, args,
           fileaccess_get_error_text(file_operation_error_from_errno(errno)));
