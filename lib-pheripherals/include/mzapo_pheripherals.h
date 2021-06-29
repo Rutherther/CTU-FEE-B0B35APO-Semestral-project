@@ -28,6 +28,8 @@ extern "C" {
                                 mzapo_rgb_led_t *rgb_led, display_t *display,
                                 void **mzapo_knobs_address);
 
+  void mzapo_pheripherals_clear(mzapo_pheripherals_t *pheripherals);
+
 #ifdef __cplusplus
 } /* extern "C"*/
 #endif

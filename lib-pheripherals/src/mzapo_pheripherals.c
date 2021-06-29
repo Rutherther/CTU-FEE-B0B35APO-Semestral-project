@@ -86,3 +86,10 @@ bool mzapo_check_pheripherals(mzapo_ledstrip_t *ledstrip,
 
   return true;
 }
+
+void mzapo_pheripherals_clear(mzapo_pheripherals_t *pheripherals) {
+  rgb_led_clear(pheripherals->rgb_leds, LED_LEFT);
+  rgb_led_clear(pheripherals->rgb_leds, LED_RIGHT);
+  ledstrip_clear(pheripherals->ledstrip);
+  display_deinit(pheripherals->display);
+}
