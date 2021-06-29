@@ -353,6 +353,8 @@ container_t gui_list_container_create(void *state, uint32_t items_count,
  */
 uint32_t gui_list_get_selected_index(container_t *container);
 
+void gui_list_set_selected_index(container_t *container, uint32_t index);
+
 /**
  * @brief Scroll list container by x, y
  * @details Increase scroll coordinates by x, y so different view arrea is shown
@@ -389,5 +391,7 @@ bool gui_list_container_set_render_function(container_t *container,
 
 void gui_list_container_render(gui_t *gui, container_t *container);
 void gui_list_container_update(gui_t *gui, container_t *container);
+uint32_t gui_list_get_visible_items_count(container_t *container);
+uint32_t gui_list_get_items_count(container_t *container);
 
 #endif // __GUI_H__

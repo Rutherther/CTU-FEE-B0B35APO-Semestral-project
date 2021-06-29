@@ -14,6 +14,7 @@
 #include "logger.h"
 #include "path.h"
 #include "renderer.h"
+#include "keyboard_const.h"
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
@@ -114,6 +115,45 @@ static void command_handler_exit(void *state, int amount) {
   }
 }
 
+static void command_handler_jump_right(void *state, int amount) {
+  browser_window_state_t *bstate = (browser_window_state_t *)state;
+  if (bstate->gui->active_window == bstate->browser_window) {
+    uint32_t scroll_x = bstate->list_container->inner.list.scroll_x;
+    uint32_t current_x = 0;
+
+    int i;
+    for (i = 0; i < COLUMNS_COUNT - 1; i++) {
+      current_x += bstate->column_widths[i];
+      if (scroll_x < current_x) {
+        break;
+      }
+    }
+
+    if (amount < 0) {
+      i --;
+    } else {
+      i++;
+    }
+
+    if (i < 0) {
+      i = 0;
+    } else if (i > COLUMNS_COUNT - 1) {
+      i = COLUMNS_COUNT - 1;
+    }
+
+    scroll_x = 0;
+    for (int j = 0; j < i; j++) {
+      scroll_x += bstate->column_widths[j];
+    }
+
+    bstate->list_container->inner.list.scroll_x = scroll_x;
+  }
+}
+
+static void command_handler_jump_left(void *state, int amount) {
+  command_handler_jump_right(state, -amount);
+}
+
 static void *browser_window_construct(window_t *window, void *state) {
   browser_window_state_t *bstate = (browser_window_state_t *)state;
   logger_t *logger = bstate->gui->logger;
@@ -137,7 +177,7 @@ static void *browser_window_construct(window_t *window, void *state) {
   // group components init
   component_t path_text = gui_text_create(&bstate->text_state, 3, 3, bstate->gui->size.x, 0);
   component_t line_component = gui_line_create(&WHITE_PIXEL, 0, path_text.height + path_text.y + 3, 1000, 1);
-  
+
   gui_group_container_add_component(&window->containers[1], path_text);
   bstate->line_component =
       gui_group_container_add_component(&window->containers[1], line_component);
@@ -153,6 +193,10 @@ static void *browser_window_construct(window_t *window, void *state) {
   gui_list_commands_register(bstate->gui->commands, &bstate->click_state);
   commands_register(bstate->gui->commands, IN_KEYBOARD, 'e',
                     command_handler_exit, state);
+  commands_register(bstate->gui->commands, IN_KEYBOARD, KEYBOARD_JUMP_RIGHT,
+                    command_handler_jump_right, state);
+  commands_register(bstate->gui->commands, IN_KEYBOARD, KEYBOARD_JUMP_LEFT,
+                    command_handler_jump_left, state);
 
   return state;
 }
@@ -161,6 +205,10 @@ static void browser_window_item_clicked(container_t *container, void *state,
                                         uint32_t selected_index) {
 
   browser_window_state_t *bstate = (browser_window_state_t *)state;
+  if (bstate->gui->active_window != bstate->browser_window) {
+    return;
+  }
+
   logger_t *logger = bstate->gui->logger;
 
   file_t current_file = bstate->current_directory->files[selected_index];

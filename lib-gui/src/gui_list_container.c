@@ -123,6 +123,31 @@ uint32_t gui_list_get_selected_index(container_t *container) {
   return container->inner.list.selected_index;
 }
 
+void gui_list_set_selected_index(container_t *container, uint32_t index) {
+  if (index >= container->inner.list.items_count) {
+    index = container->inner.list.items_count - 1;
+  }
+
+  container->inner.list.selected_index = index;
+}
+
+uint32_t gui_list_get_items_count(container_t *container) {
+  return container->inner.list.items_count;
+}
+
+uint32_t gui_list_get_visible_items_count(container_t *container) {
+  list_container_t list = container->inner.list;
+  uint16_t item_full_height = list.item_height + list.item_padding * 2;
+  uint32_t container_height = container->height;
+
+  bool header = list.render_header_fn != NULL;
+  if (header) {
+    container_height -= item_full_height;
+  }
+
+  return (double)(container_height) / item_full_height - 1;
+}
+
 void gui_list_container_update(gui_t *gui, container_t *container) {
   list_container_t list = container->inner.list;
 
@@ -138,16 +163,8 @@ void gui_list_container_update(gui_t *gui, container_t *container) {
     first_visible_index = 0;
   }
 
-  uint32_t container_height = container->height;
-
-  bool header = list.render_header_fn != NULL;
-  if (header) {
-    container_height -= item_full_height;
-  }
-
-  uint32_t items_count = (double)(container_height) / item_full_height - 1;
+  uint32_t items_count = gui_list_get_visible_items_count(container);
   uint32_t last_visible_index = first_visible_index + items_count;
-
   uint32_t selected_index = list.selected_index;
 
   if (selected_index < first_visible_index) {
