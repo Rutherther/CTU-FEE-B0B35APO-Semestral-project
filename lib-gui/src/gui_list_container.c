@@ -164,13 +164,15 @@ void gui_list_container_update(gui_t *gui, container_t *container) {
   }
 
   uint32_t items_count = gui_list_get_visible_items_count(container);
-  uint32_t last_visible_index = first_visible_index + items_count;
   uint32_t selected_index = list.selected_index;
 
-  if (selected_index < first_visible_index) {
-    list.scroll_y = selected_index * item_full_height;
-  } else if (selected_index > last_visible_index) {
-    list.scroll_y = (selected_index - items_count) * item_full_height;
+  uint32_t last_scroll = (selected_index - items_count) * item_full_height;
+  uint32_t first_scroll = selected_index * item_full_height;
+
+  if (list.scroll_y > first_scroll) {
+    list.scroll_y = first_scroll;
+  } else if (list.scroll_y < last_scroll) {
+    list.scroll_y = last_scroll;
   }
 
   container->inner.list = list;
