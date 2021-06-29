@@ -81,7 +81,12 @@ static file_operation_error_t exec_options_init(exec_options_loader_t *loader, c
   return error;
 }
 
-static error_t file_browser_start(logger_t *logger, mzapo_ledstrip_t ledstrip, mzapo_rgb_led_t rgb_leds, display_t display, void *knobs) {
+static error_t file_browser_start(logger_t *logger) {
+  mzapo_rgb_led_t rgb_leds = mzapo_create_rgb_led();
+
+  display_t display = mzapo_create_display();
+  mzapo_ledstrip_t ledstrip = mzapo_create_ledstrip();
+  void *knobs = mzapo_get_knobs_address();
   struct termios oldstdin;
   if (!mzapo_check_pheripherals(&ledstrip, &rgb_leds, &display, &knobs)) {
     logger_error(logger, __FILE__, __FUNCTION__, __LINE__,
@@ -134,22 +139,12 @@ int main(int argc, char *argv[]) {
   /* Try to acquire lock the first */
   if (serialize_lock(1) <= 0) {
     logger_warn(&logger, __FILE__, __FUNCTION__, __LINE__, "System is occupied");
-
-    if (1) {
-      /* Wait till application holding lock releases IT or exits */
-      logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
-                  "Waiting");
-      serialize_lock(0);
-    }
+    logger_info(&logger, __FILE__, __FUNCTION__, __LINE__,
+                "Waiting");
+    serialize_lock(0);
   }
 
-  mzapo_rgb_led_t rgb_leds = mzapo_create_rgb_led();
-
-  display_t display = mzapo_create_display();
-  mzapo_ledstrip_t ledstrip = mzapo_create_ledstrip();
-  void* knobs = mzapo_get_knobs_address();
-
-  error_t rerror = file_browser_start(&logger, ledstrip, rgb_leds, display, knobs);
+  error_t rerror = file_browser_start(&logger);
 
   serialize_unlock();
 
