@@ -67,6 +67,44 @@ static void command_handler_close(void *state, int amount) {
   dstate->running = false;
 }
 
+static void dialog_construct_group(gui_t *gui, container_t *group_container, font_t *font, dialog_state_t *dstate) {
+  int16_t begin_x = gui->size.x / 2 - DIALOG_WIDTH / 2;
+  int16_t begin_y = gui->size.y / 2 - DIALOG_HEIGHT / 2;
+
+  // construct line, rectangle and text
+  gui_container_info_init(group_container, NULL, 0, begin_x, begin_y);
+
+  gui_group_container_add_component(
+      group_container,
+      gui_line_create(&WHITE_PIXEL, 0, 0, DIALOG_WIDTH, DIALOG_HEIGHT));
+
+  gui_group_container_add_component(
+      group_container,
+      gui_line_create(&WHITE_PIXEL, 10, font->size + 3, DIALOG_WIDTH - 20, 1));
+
+  uint16_t title_center_x =
+      DIALOG_WIDTH / 2 - font_measure_text(font, dstate->title).x / 2;
+
+  dstate->title_component = gui_group_container_add_component(
+      group_container,
+      gui_text_create(&dstate->title_text, title_center_x, 2, 0, 0));
+}
+static void dialog_construct_one(gui_t *gui, container_t *one_container,
+                                 font_t *font, dialog_state_t *dstate) {
+  int16_t begin_x = gui->size.x / 2 - DIALOG_WIDTH / 2;
+  int16_t begin_y = gui->size.y / 2 - DIALOG_HEIGHT / 2;
+  // construct message
+  gui_container_info_init(one_container, NULL, 0, begin_x,
+                          begin_y + font->size + 5);
+  one_container->width = DIALOG_WIDTH;
+  one_container->height = DIALOG_HEIGHT - font->size - 5;
+
+  dstate->dialog_component = gui_one_container_set_component(
+      one_container,
+      gui_text_create(&dstate->dialog_text, DIALOG_PADDING, DIALOG_PADDING,
+                      DIALOG_WIDTH - 2 * DIALOG_PADDING, DIALOG_HEIGHT));
+}
+
 static void *dialog_construct(window_t *window, void *state) {
   dialog_state_t *dstate = (dialog_state_t *)state;
   gui_t *gui = dstate->gui;
@@ -84,35 +122,9 @@ static void *dialog_construct(window_t *window, void *state) {
   container_t *one_container = &window->containers[1];
   container_t *group_container = &window->containers[0];
 
-  int16_t begin_x = gui->size.x / 2 - DIALOG_WIDTH / 2;
-  int16_t begin_y = gui->size.y / 2 - DIALOG_HEIGHT / 2;
 
-  // construct line, rectangle and text
-  gui_container_info_init(group_container, NULL, 0, begin_x,
-                          begin_y);
-
-  gui_group_container_add_component(
-      group_container,
-      gui_line_create(&WHITE_PIXEL, 0, 0, DIALOG_WIDTH, DIALOG_HEIGHT));
-
-  gui_group_container_add_component(
-      group_container,
-      gui_line_create(&WHITE_PIXEL, 10, font->size + 3, DIALOG_WIDTH - 20, 1));
-
-  uint16_t title_center_x =
-      DIALOG_WIDTH / 2 - font_measure_text(font, dstate->title).x / 2;
-
-  dstate->title_component = gui_group_container_add_component(
-      group_container,
-      gui_text_create(&dstate->title_text, title_center_x, 2, 0, 0));
-
-  // construct message
-  gui_container_info_init(one_container, NULL, 0, begin_x,
-                          begin_y + font->size + 5);
-
-  dstate->dialog_component = gui_one_container_set_component(
-      one_container,
-      gui_text_create(&dstate->dialog_text, DIALOG_PADDING, DIALOG_PADDING, DIALOG_WIDTH - 2*DIALOG_PADDING, DIALOG_HEIGHT));
+  dialog_construct_group(gui, group_container, font, dstate);
+  dialog_construct_one(gui, one_container, font, dstate);
 
   // register commands
   commands_register(gui->commands, IN_KEYBOARD, 0, command_handler_close, dstate);
