@@ -14,14 +14,14 @@ bool table_render_item(gui_table_t *table_state, void *state,
   return true;
 }
 
-bool table_update_widths(gui_table_t *table, font_t *font, void *arr, size_t item_size,
+bool table_update_widths(gui_table_t *table, font_t *font, void *arr, uint64_t item_size,
                          uint32_t items_count) {
   char tmp[MAX_COLUMN_CHARS];
   for (int i = 0; i < table->columns_count; i++) {
     uint16_t max_size = font_measure_text(font, table->columns_names[i]).x;
     for (int j = 0; j < items_count; j++) {
       char *data =
-          browser_get_column_data(arr + item_size * i, i, tmp);
+          browser_get_column_data(arr + item_size * j, i, tmp);
       if (data == NULL) {
         continue;
       }

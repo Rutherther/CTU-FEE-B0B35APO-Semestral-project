@@ -7,7 +7,7 @@
 #include "font.h"
 #include <stdint.h>
 
-#define MAX_COLUMN_CHARS 200
+#define MAX_COLUMN_CHARS 2000
 
 typedef char *(*table_get_data_fn)(void *state, uint16_t column, char *buffer);
 
@@ -24,6 +24,6 @@ bool table_render_item(gui_table_t *table_state, void *state,
 char *browser_get_column_data(void *state, uint16_t column, char *out);
 
 bool table_update_widths(gui_table_t *table, font_t *font, void *arr,
-                         size_t item_size, uint32_t items_count);
+                         uint64_t item_size, uint32_t items_count);
 
 #endif // __GUI_LIST_TABLE_H__
