@@ -73,7 +73,7 @@ static opened_file_state_t file_open_mime(file_t *file, exec_options_t *options,
   return file_open_mime_raw(local_path, options, mime);
 }
 
-static opened_file_state_t file_open_text(file_t *file, exec_options_t *options,
+opened_file_state_t file_open_text(file_t *file, exec_options_t *options,
                            fileaccess_state_t state) {
   return file_open_mime(file, options, state, "text");
 }

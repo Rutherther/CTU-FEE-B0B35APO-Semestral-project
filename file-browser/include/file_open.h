@@ -1,9 +1,9 @@
 #ifndef __FILE_OPEN_H__
 #define __FILE_OPEN_H__
 
-#include <stdbool.h>
 #include "file_access.h"
 #include "options.h"
+#include <stdbool.h>
 
 typedef enum {
   OPENED_NONE,
@@ -24,7 +24,10 @@ typedef struct {
 } opened_file_state_t;
 
 opened_file_state_t file_open(file_t *file, exec_options_t *options,
-                                 fileaccess_state_t state);
+                              fileaccess_state_t state);
+
+opened_file_state_t file_open_text(file_t *file, exec_options_t *options,
+                                   fileaccess_state_t state);
 
 opened_file_state_t file_open_mime_raw(char *file, exec_options_t *options,
                                        char *mime);

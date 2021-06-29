@@ -2,6 +2,7 @@
 #include "dialog.h"
 #include "file_browser_utils.h"
 #include "display_utils.h"
+#include "window_contextmenu.h"
 #include "gui_list_table.h"
 #include "file_access.h"
 #include "file_open.h"
@@ -80,6 +81,25 @@ static void command_handler_exit(void *state, int amount) {
   browser_window_state_t *bstate = (browser_window_state_t *)state;
   if (bstate->gui->active_window == bstate->browser_window) {
     bstate->running = false;
+  }
+}
+
+static void command_handler_contextmenu(void *state, int amount) {
+  browser_window_state_t *bstate = (browser_window_state_t *)state;
+  if (bstate->gui->active_window == bstate->browser_window) {
+    uint32_t selected_index = gui_list_get_selected_index(bstate->list_container);
+    file_t *file = &bstate->current_directory->files[selected_index];
+
+    if (file->type != FT_FILE) {
+      logger_warn(bstate->gui->logger, __FILE__, __FUNCTION__, __LINE__,
+                  "Context menus are for files only");
+      return;
+    }
+
+    logger_info(bstate->gui->logger, __FILE__, __FUNCTION__, __LINE__,
+                "Context menu will open");
+
+    window_contextmenu_open(bstate->gui, bstate->font, bstate->state, file);
   }
 }
 
@@ -166,6 +186,8 @@ static void *browser_window_construct(window_t *window, void *state) {
   gui_list_commands_register(bstate->gui->commands, &bstate->click_state);
   commands_register(bstate->gui->commands, IN_KEYBOARD, 'e',
                     command_handler_exit, state);
+  commands_register(bstate->gui->commands, IN_KEYBOARD, 'c',
+                    command_handler_contextmenu, state);
   commands_register(bstate->gui->commands, IN_KEYBOARD, KEYBOARD_JUMP_RIGHT,
                     command_handler_jump_right, state);
   commands_register(bstate->gui->commands, IN_KEYBOARD, KEYBOARD_JUMP_LEFT,
