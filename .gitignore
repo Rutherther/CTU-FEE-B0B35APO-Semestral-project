@@ -1,0 +1,9 @@
+compile_commands.json
+.cache
+ignore
+bin/
+obj/
+
+depend
+.computer
+.arm

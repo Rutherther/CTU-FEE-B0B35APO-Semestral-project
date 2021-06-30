@@ -1,0 +1,39 @@
+===================================================
+Prohlížeč textu (V tom si právě čtete toto ovládání)
+  - ZÁKLADNÍ NAVIGACE
+    - h, j, k, l - pohyb v textu
+                   (doleva, dolů, nahoru, doprava)
+    - z, x - přiblížit / oddálit
+  - NAVIGACE SPECIÁLNÍ PRO PROHLÍŽEČ TEXTU
+    - y, u, i, p - pohyb celým oknem
+                   (doleva, dolů, nahoru, doprava)
+    - n - pohyb na začátek souboru
+    - m - pohyb na konec souboru
+    - r - reset přiblížení do výchozího
+  - OVLÁDÁNÍ
+    - e - ukončit (Tímto se vrátíte z tohoto okna zpět)
+
+===================================================
+Prohlížeč obrázků
+  - ZÁKLADNÍ NAVIGACE
+    - Stejná jako pro prohlížeč textu
+  - OVLÁDÁNÍ
+    - e - ukončit
+    - m - změní mód pohybu kurzoru
+          nebo celého obrázku
+          (pokud je pohyb přepnutý na celý obrázek, RGB LEDky budou svítit zeleně)
+
+===================================================
+Průzkumník souborů
+  - ZÁKLADNÍ NAVIGACE
+    - Stejná jako prohlížeč textu a obrázků
+  - NAVIGACE SPECIÁLNÍ PRO PRŮZKUMNÍK SOUBORŮ
+    - stejná jako
+      NAVIGACE SPECIÁLNÍ PRO PROHLÍŽEČ TEXTU
+  - OVLÁDÁNÍ
+    - e - ukončit / jít zpět
+    - v - potvrdit volbu (otevřít soubor, složku)
+    - c - otevřít kontextové menu souboru
+===================================================
+
+To je vše, tento soubor můžete opustit pomocí 'e'.
