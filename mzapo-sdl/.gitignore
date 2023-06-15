@@ -1,0 +1,6 @@
+connect.gdb
+
+obj/
+bin/
+
+.cache/
