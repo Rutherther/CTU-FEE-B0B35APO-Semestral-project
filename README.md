@@ -6,7 +6,7 @@ This kit contains:
 - a display, knobs, buttons, LEDs
 - and more
 
-![MicroZed evaluation kit](mzapo-sdl/mzapo.png "MicroZed evaluation kit")
+<img src="mzapo-sdl/img/mzapo.png" alt="MicroZed evaluation kit" width="300">
 
 It is running Linux operating system.
  
